@@ -14,27 +14,32 @@ class BottomLeftPacker:
             best_position = None
             best_y = float("inf")
             if not bin.items:
-                if self._can_fit(bin_width, bin_height, rectangle):
-                    rectangle.x = 0
-                    rectangle.y = 0
-                    bin.items.append(rectangle)
-                else:
-                    raise Exception("The rectangle does not fit into the bin.")
+                self._handle_empty_bin(bin_width, bin_height, bin, rectangle)
             else:
                 for item in bin.items:
                     if self._can_place_to_the_right(bin_width, rectangle, best_y, item):
                         best_position = (item.x + item.width, item.y)
                         best_y = item.y
-
-                    if self._can_place_below(bin_height, rectangle, best_y, item):
+                    elif self._can_place_below(bin_height, rectangle, best_y, item):
                         best_position = (item.x, item.y + item.height)
                         best_y = item.y + item.height
+                    else:
+                        raise Exception("The rectangle does not fit into the bin.")
 
                 if best_position is not None:
                     rectangle.x, rectangle.y = best_position
                     bin.items.append(rectangle)
 
         return bin
+
+    def _handle_empty_bin(self, bin_width, bin_height, bin, rectangle):
+        """Handles the case when the bin is empty."""
+        if self._can_fit(bin_width, bin_height, rectangle):
+            rectangle.x = 0
+            rectangle.y = 0
+            bin.items.append(rectangle)
+        else:
+            raise Exception("The rectangle does not fit into the bin.")
 
     def _can_fit(self, bin_width, bin_height, rectangle):
         """Checks if a rectangle can fit into a bin."""
