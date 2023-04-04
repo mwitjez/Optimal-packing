@@ -1,20 +1,19 @@
 import random
 
-from bottom_left_fill import BottomLeftFill
-
 
 class GeneticAlgorithm():
     """Genetic algorithm class"""
-    def __init__(self, population_size, parents_number, chromosome_length, mutation_rate):
+    def __init__(self, population_size, parents_number, chromosome_length, mutation_rate, bottom_left_packer):
         self.population_size = population_size
         self.parents_number = parents_number
         self.chromosome_length = chromosome_length
         self.mutation_rate = mutation_rate
         self._offspring_size = self.population_size - self.parents_number
+        self.bottom_left_packer = bottom_left_packer
 
     def run(self, num_generations):
         """Function that implements a genetic algorithm."""
-        population = self.generate_population()
+        population = self._generate_population()
         for _ in range(num_generations):
             fitness_values = [
                 self._calculate_fitness(chromosome) for chromosome in population
@@ -30,13 +29,13 @@ class GeneticAlgorithm():
         population = []
         for _ in range(self.population_size):
             chromosome = list(range(self.chromosome_length))
-            chromosome = random.shuffle(chromosome)
+            random.shuffle(chromosome)
             population.append(chromosome)
         return population
 
     def _calculate_fitness(self, chromosome):
         """Calculates the fitness value of a chromosome."""
-        fitness = BottomLeftFill.get_max_height(chromosome)
+        fitness = self.bottom_left_packer.get_max_height(chromosome)
         return fitness
 
     def _select_parents(self, population, fitness_values):
