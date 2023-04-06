@@ -1,3 +1,4 @@
+import numpy as np
 from dataclasses import dataclass
 
 
@@ -14,3 +15,4 @@ class Bin:
         self.width = width
         self.height = height
         self.items = []
+        self.map = np.zeros((self.height, self.width))

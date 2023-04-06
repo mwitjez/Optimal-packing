@@ -41,8 +41,8 @@ class GeneticAlgorithm():
     def _select_parents(self, population, fitness_values):
         """Selects the best chromosomes to be parents for the next generation."""
         parents = []
-        for i in range(self.num_parents):
-            max_fitness_index = fitness_values.index(max(fitness_values))
+        for i in range(self.parents_number):
+            max_fitness_index = fitness_values.index(min(fitness_values))
             parents.append(population[max_fitness_index])
             fitness_values[max_fitness_index] = -1
         return parents
@@ -54,37 +54,31 @@ class GeneticAlgorithm():
         for _ in range(self._offspring_size):
             parent1 = random.choice(parents)
             parent2 = random.choice(parents)
-            chromosome1, chromosome2 = self._partially_mapped_crossover(parent1, parent2)
-            offspring.append(chromosome1)
-            offspring.append(chromosome2)
+            new_chromosome = self._partially_mapped_crossover(parent1, parent2)
+            offspring.append(new_chromosome)
         return offspring
 
     def _partially_mapped_crossover(self, parent1, parent2):
-        """Performs partially mapped crossover on two parents to generate offspring."""
-        chromosome1 = []
-        chromosome2 = []
-        start = random.randint(0, self.chromosome_length - 1)
-        end = random.randint(start, self.chromosome_length - 1)
-        for i in range(self.chromosome_length):
-            if start <= i <= end:
-                chromosome1.append(parent1[i])
-                chromosome2.append(parent2[i])
-            else:
-                chromosome1.append(-1)
-                chromosome2.append(-1)
-        for i in range(self.chromosome_length):
-            if chromosome1[i] == -1:
-                chromosome1[i] = self._get_value(parent2[i], chromosome2, chromosome1)
-            if chromosome2[i] == -1:
-                chromosome2[i] = self._get_value(parent1[i], chromosome1, chromosome2)
-        return chromosome1, chromosome2
+        """Perform Partially Mapped Crossover (PMX) on two parent strings to generate offspring."""
+        point1 = random.randint(0, len(parent1) - 1)
+        point2 = random.randint(0, len(parent1) - 1)
 
-    def _get_value(self, value, chromosome1, chromosome2):
-        """Returns the value to be inserted in the offspring's chromosome."""
-        while value in chromosome1:
-            index = chromosome1.index(value)
-            value = chromosome2[index]
-        return value
+        if point2 < point1:
+            point1, point2 = point2, point1
+
+        offspring = parent1[:]
+
+        for i in range(point1, point2 + 1):
+            if offspring[i] not in parent2[point1:point2 + 1]:
+                j = parent2.index(offspring[i])
+                offspring[i], offspring[j] = offspring[j], offspring[i]
+        for i in range(len(offspring)):
+            if i < point1 or i > point2:
+                while offspring[i] in offspring[point1:point2 + 1]:
+                    j = parent2.index(offspring[i])
+                    offspring[i] = parent2[j]
+
+        return offspring
 
     def _mutate(self, offspring):
         """Implements order based mutation on the offspring."""

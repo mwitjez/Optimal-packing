@@ -10,6 +10,6 @@ class Data:
     def _load(self, file):
         with open(file, 'r') as f:
             return json.load(f)
- 
+
     def create_rectangle_list(self, data):
         return [Rectangle(rectangle['w'], rectangle['h']) for rectangle in data]
