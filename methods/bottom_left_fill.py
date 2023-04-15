@@ -41,7 +41,7 @@ class BottomLeftPacker:
             else:
                 raise Exception("No valid position found for rectangle.")
         return bin
-    
+
     def _reset_rectangles(self):
         """Resets the position of the rectangles."""
         for rectangle in self.rectangles:

@@ -6,16 +6,16 @@ from data.data import Data
 
 if __name__ == "__main__":
     data = Data()
-    bottom_left_packer = BottomLeftPacker(data.P1_rectangles, 20, 40)
+    bottom_left_packer = BottomLeftPacker(data.C1["items"], data.C1["bin_size"][0], data.C1["bin_size"][1]+5)
 
-    population_size = 100
-    parents_number = 10
-    chromosome_length = len(data.P1_rectangles)
-    mutation_rate = 0.1
-    num_generations = 25
-    genetic_algorithm = GeneticAlgorithm(population_size, parents_number, chromosome_length, mutation_rate, bottom_left_packer)
+    population_size = 50
+    parents_number = 5
+    chromosome_length = data.C1["num_items"]
+    mutation_rate = 0.5
+    num_generations = 100
+    genetic_algorithm = GeneticAlgorithm(parents_number, chromosome_length, mutation_rate, bottom_left_packer)
     # Run the genetic algorithm
-    best_chromosome = genetic_algorithm.run(num_generations)
+    best_chromosome = genetic_algorithm.run(population_size, num_generations)
     # Plot the best chromosome
     solution = bottom_left_packer.pack_rectangles(best_chromosome)
     plotter = Plotter2d(solution)

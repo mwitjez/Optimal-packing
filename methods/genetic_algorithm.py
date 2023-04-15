@@ -1,35 +1,36 @@
 import random
-
 import matplotlib.pyplot as plt
+
+from tqdm import tqdm
 
 
 class GeneticAlgorithm():
     """Genetic algorithm class"""
-    def __init__(self, population_size, parents_number, chromosome_length, mutation_rate, bottom_left_packer):
-        self.population_size = population_size
+    def __init__(self, parents_number, chromosome_length, mutation_rate, bottom_left_packer):
         self.parents_number = parents_number
         self.chromosome_length = chromosome_length
         self.mutation_rate = mutation_rate
-        self._offspring_size = self.population_size - self.parents_number
         self.bottom_left_packer = bottom_left_packer
+        self._offspring_factor = 0.5
         self._best_fitness = []
 
-    def run(self, num_generations):
+    def run(self, num_generations, population_size):
         """Function that implements a genetic algorithm."""
-        population = self._generate_population()
-        for _ in range(num_generations):
+        population = self._generate_population(population_size)
+        for _ in tqdm(range(num_generations)):
             fitness_values = [self._calculate_fitness(chromosome) for chromosome in population]
             self._best_fitness.append(min(fitness_values))
             best_chromosome = population[fitness_values.index(self._best_fitness[-1])]
             parents = self._select_parents(population, fitness_values)
-            offspring = self._crossover(parents)
-            population = self._mutate(offspring) + parents
+            offspring = self._crossover(parents, int(self._offspring_factor * population_size))
+            newcomers = self._generate_population(population_size - len(offspring) - len(parents))
+            population = self._mutate(offspring) + parents + newcomers
         return best_chromosome
 
-    def _generate_population(self):
+    def _generate_population(self, population_size):
         """Generates a population of chromosomes with shuffled values."""
         population = []
-        for _ in range(self.population_size):
+        for _ in range(population_size):
             chromosome = list(range(self.chromosome_length))
             random.shuffle(chromosome)
             population.append(chromosome)
@@ -49,11 +50,11 @@ class GeneticAlgorithm():
             fitness_values[best_fitness_index] = float("Inf")
         return parents
 
-    def _crossover(self, parents):
+    def _crossover(self, parents, offspring_size):
         """Generates offspring through crossover of the selected parents.
         Implementation of partially mapped crossover"""
         offspring = []
-        for _ in range(self._offspring_size):
+        for _ in range(offspring_size):
             parent1 = random.choice(parents)
             parent2 = random.choice(parents)
             new_chromosome = self._partially_mapped_crossover(parent1, parent2)
@@ -84,7 +85,7 @@ class GeneticAlgorithm():
 
     def _mutate(self, offspring):
         """Implements order based mutation on the offspring."""
-        for i in range(self._offspring_size):
+        for i in range(len(offspring)):
             if random.random() < self.mutation_rate:
                 offspring[i] = self._order_based_mutation(offspring[i])
         return offspring
@@ -97,7 +98,7 @@ class GeneticAlgorithm():
         random.shuffle(sub_list)
         chromosome[start:end] = sub_list
         return chromosome
-    
+
     def plot_stats(self):
         """Plots the best fitness values for each generation."""
         plt.plot(self._best_fitness)
