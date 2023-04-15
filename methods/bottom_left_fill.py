@@ -13,20 +13,20 @@ class BottomLeftPacker:
         self.bin_width = bin_width
         self.bin_height = bin_height
 
-    def get_max_height(self, packing_order):
+    def get_max_height(self, packing_order: list):
         """Returns the maximum height of the bin after packing the rectangles in the given order."""
         try:
             packed_bin = self.pack_rectangles(packing_order)
         except:
             return float('inf')
-        max_height = packed_bin.map.nonzero()[0].max()
+        max_height = packed_bin.map.nonzero()[0].max() + 1
         return max_height
 
     def pack_rectangles(self, packing_order: list):
         """Packs the rectangles in the given order."""
         bin = Bin(self.bin_width, self.bin_height)
-        self.rectangles = [self.rectangles[i] for i in packing_order]
-        for rectangle in self.rectangles:
+        sorted_rectangles = [self.rectangles[i] for i in packing_order]
+        for rectangle in sorted_rectangles:
             for y in range(bin.height - rectangle.height + 1):
                 for x in range(bin.width - rectangle.width + 1):
                     if self._is_valid_position(bin, rectangle, x, y):
@@ -41,6 +41,12 @@ class BottomLeftPacker:
             else:
                 raise Exception("No valid position found for rectangle.")
         return bin
+    
+    def _reset_rectangles(self):
+        """Resets the position of the rectangles."""
+        for rectangle in self.rectangles:
+            rectangle.x = 0
+            rectangle.y = 0
 
     def _is_valid_position(self, bin, rectangle, x, y):
         """Returns True if the rectangle can be placed at the given position, False otherwise."""

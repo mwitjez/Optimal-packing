@@ -1,5 +1,7 @@
 import random
 
+import matplotlib.pyplot as plt
+
 
 class GeneticAlgorithm():
     """Genetic algorithm class"""
@@ -10,18 +12,18 @@ class GeneticAlgorithm():
         self.mutation_rate = mutation_rate
         self._offspring_size = self.population_size - self.parents_number
         self.bottom_left_packer = bottom_left_packer
+        self._best_fitness = []
 
     def run(self, num_generations):
         """Function that implements a genetic algorithm."""
         population = self._generate_population()
         for _ in range(num_generations):
-            fitness_values = [
-                self._calculate_fitness(chromosome) for chromosome in population
-            ]
+            fitness_values = [self._calculate_fitness(chromosome) for chromosome in population]
+            self._best_fitness.append(min(fitness_values))
+            best_chromosome = population[fitness_values.index(self._best_fitness[-1])]
             parents = self._select_parents(population, fitness_values)
             offspring = self._crossover(parents)
             population = self._mutate(offspring) + parents
-        best_chromosome = population[fitness_values.index(max(fitness_values))]
         return best_chromosome
 
     def _generate_population(self):
@@ -41,10 +43,10 @@ class GeneticAlgorithm():
     def _select_parents(self, population, fitness_values):
         """Selects the best chromosomes to be parents for the next generation."""
         parents = []
-        for i in range(self.parents_number):
-            max_fitness_index = fitness_values.index(min(fitness_values))
-            parents.append(population[max_fitness_index])
-            fitness_values[max_fitness_index] = -1
+        for _ in range(self.parents_number):
+            best_fitness_index = fitness_values.index(min(fitness_values))
+            parents.append(population[best_fitness_index])
+            fitness_values[best_fitness_index] = float("Inf")
         return parents
 
     def _crossover(self, parents):
@@ -95,3 +97,10 @@ class GeneticAlgorithm():
         random.shuffle(sub_list)
         chromosome[start:end] = sub_list
         return chromosome
+    
+    def plot_stats(self):
+        """Plots the best fitness values for each generation."""
+        plt.plot(self._best_fitness)
+        plt.xlabel('Generation')
+        plt.ylabel('Fitness')
+        plt.show()
