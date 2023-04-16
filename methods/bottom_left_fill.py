@@ -1,7 +1,4 @@
-import numpy as np
-
 from utils.bin import Bin
-from utils.rectangle import Rectangle
 
 
 class BottomLeftPacker:
@@ -41,12 +38,6 @@ class BottomLeftPacker:
             else:
                 raise Exception("No valid position found for rectangle.")
         return bin
-
-    def _reset_rectangles(self):
-        """Resets the position of the rectangles."""
-        for rectangle in self.rectangles:
-            rectangle.x = 0
-            rectangle.y = 0
 
     def _is_valid_position(self, bin, rectangle, x, y):
         """Returns True if the rectangle can be placed at the given position, False otherwise."""

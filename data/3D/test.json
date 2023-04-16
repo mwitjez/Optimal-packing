@@ -1,0 +1,44 @@
+{
+    "num_items": 9,
+    "bin_size": [10, 10, 20],
+    "items": [{
+        "depth": 5,
+        "height": 5,
+        "width": 5
+    },{
+        "depth": 10,
+        "height": 2,
+        "width": 5
+    }
+    ,{
+        "depth": 7,
+        "height": 3,
+        "width": 2
+    },{
+        "depth": 15,
+        "height": 6,
+        "width": 3
+    },{
+        "depth": 5,
+        "height": 1,
+        "width": 5
+    },{
+        "depth": 11,
+        "height": 9,
+        "width": 2
+    },{
+        "depth": 2,
+        "height": 2,
+        "width": 2
+    },{
+        "depth": 7,
+        "height": 5,
+        "width": 5
+    }
+    ,{
+        "depth": 19,
+        "height": 9,
+        "width": 9
+    }
+    ]
+}
