@@ -1,4 +1,5 @@
 import random
+import math
 import matplotlib.pyplot as plt
 
 from tqdm import tqdm
@@ -13,6 +14,7 @@ class GeneticAlgorithm():
         self.bottom_left_packer = bottom_left_packer
         self._offspring_factor = 0.5
         self._best_fitness = []
+        self._max_heights = []
 
     def run(self, num_generations, population_size):
         """Function that implements a genetic algorithm."""
@@ -21,6 +23,7 @@ class GeneticAlgorithm():
             fitness_values = [self._calculate_fitness(chromosome) for chromosome in population]
             self._best_fitness.append(min(fitness_values))
             best_chromosome = population[fitness_values.index(self._best_fitness[-1])]
+            self._max_heights.append(self.bottom_left_packer.get_max_height(best_chromosome))
             parents = self._select_parents(population, fitness_values)
             offspring = self._crossover(parents, int(self._offspring_factor * population_size))
             newcomers = self._generate_population(population_size - len(offspring) - len(parents))
@@ -38,7 +41,11 @@ class GeneticAlgorithm():
 
     def _calculate_fitness(self, chromosome):
         """Calculates the fitness value of a chromosome."""
-        fitness = self.bottom_left_packer.get_max_height(chromosome)
+        max_height = self.bottom_left_packer.get_max_height(chromosome)
+        packing_density = self.bottom_left_packer.get_packing_density(chromosome)
+        fitness = max_height/packing_density
+        if math.isnan(fitness):
+            fitness = float("Inf")
         return fitness
 
     def _select_parents(self, population, fitness_values):
@@ -100,8 +107,11 @@ class GeneticAlgorithm():
         return chromosome
 
     def plot_stats(self):
-        """Plots the best fitness values for each generation."""
-        plt.plot(self._best_fitness)
-        plt.xlabel('Generation')
-        plt.ylabel('Fitness')
+        """Plots the best fitness and max heightsvalues for each generation."""
+        fig, axs = plt.subplots(2, 1,)
+        axs[0].plot(self._best_fitness, label="Best fitness")
+        axs[1].plot(self._max_heights, label="Max height")
+        axs[0].legend()
+        axs[1].legend()
+        plt.xlabel("Generation")
         plt.show()

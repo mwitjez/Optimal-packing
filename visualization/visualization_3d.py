@@ -24,13 +24,13 @@ class Plotter3d():
                 [vertices[0], vertices[3], vertices[7], vertices[4]],
                 [vertices[1], vertices[2], vertices[6], vertices[5]]
             ]
-            poly = Poly3DCollection(faces, edgecolors='k', facecolors='g', linewidths=1, alpha=0.5)
+            poly = Poly3DCollection(faces, edgecolors="black", facecolors=self.cmap(i), linewidths=1, alpha=0.5)
             ax.add_collection3d(poly)
         plt.show()
 
     def _get_vertices(self, item):
         """Returns the vertices of the item."""
-        
+
         vertices = [
             (item.x, item.y, item.z),
             (item.x + item.width, item.y, item.z),

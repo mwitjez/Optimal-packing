@@ -1,3 +1,5 @@
+import numpy as np
+
 from utils.bin import Bin
 
 
@@ -18,6 +20,19 @@ class BottomLeftPacker:
             return float('inf')
         max_height = packed_bin.map.nonzero()[0].max() + 1
         return max_height
+
+    def get_packing_density(self, packing_order: list):
+        """Calculates the packing density of a bin."""
+        try:
+            packed_bin = self.pack_rectangles(packing_order)
+        except:
+            return float('inf')
+        max_height = packed_bin.map.nonzero()[0].max() + 1
+        total_area = packed_bin.map.shape[0] * max_height
+        ones_area = np.sum(packed_bin.map)
+        packing_density = ones_area / total_area
+
+        return packing_density
 
     def pack_rectangles(self, packing_order: list):
         """Packs the rectangles in the given order."""

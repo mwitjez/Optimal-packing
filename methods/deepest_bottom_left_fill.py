@@ -1,3 +1,5 @@
+import numpy as np
+
 from utils.bin3D import Bin3D
 
 
@@ -17,8 +19,23 @@ class DeepestBottomLeftPacker:
             packed_bin = self.pack_rectangles(packing_order)
         except:
             return float('inf')
-        max_height = packed_bin.map.nonzero()[0].max() + 1
+        max_height = packed_bin.map.nonzero()[2].max() + 1
         return max_height
+
+    def get_packing_density(self, packing_order: list):
+        """Calculates the packing density of a bin."""
+        try:
+            packed_bin = self.pack_rectangles(packing_order)
+        except:
+            return float('inf')
+        max_width = packed_bin.map.nonzero()[0].max() + 1
+        max_depth = packed_bin.map.nonzero()[1].max() + 1
+        max_height = packed_bin.map.nonzero()[2].max() + 1
+        total_area = max_height * max_width * max_depth
+        ones_area = np.sum(packed_bin.map)
+        packing_density = ones_area / total_area
+
+        return packing_density
 
     def pack_rectangles(self, packing_order: list):
         """Packs the rectangles in the given order using the deepest-bottom-left algorithm."""

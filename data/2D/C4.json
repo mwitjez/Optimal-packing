@@ -1,6 +1,6 @@
 {
     "num_items": 49,
-    "box_size": [60, 60],
+    "bin_size": [60, 60],
     "items": [
       {"width": 2, "height": 7},
       {"width": 24, "height": 7},
