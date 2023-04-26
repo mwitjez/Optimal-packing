@@ -1,37 +1,40 @@
 import random
 import json
 
-import random
-import json
+class DataGenerator:
+    def __init__(self, items_number, box_width, box_height, box_depth) -> None:
+        self.items_number = items_number
+        self.box_width = box_width
+        self.box_height = box_height
+        self.box_depth = box_depth
 
-def generate_dataset(num_items, bin_size):
-    items = []
-    cuts = num_items - 1
-    for i in range(num_items):
-        if i == num_items - 1:
-            cut = bin_size
-        else:
-            if random.choice([True, False]):
-                cut = [bin_size[0], bin_size[1], random.randint(1, bin_size[2] - 1)]
-            else:
-                cut = [bin_size[0], random.randint(1, bin_size[1] - 1), bin_size[2]]
-        items.append({"depth": cut[0], "height": cut[1], "width": cut[2]})
-        bin_size = [bin_size[j] - cut[j] for j in range(3)]
-        if i < num_items - 1:
-            num_cuts = min(cuts, random.randint(1, num_items - i))
-            for j in range(num_cuts):
-                if random.choice([True, False]):
-                    cut = [bin_size[0], bin_size[1], random.randint(1, bin_size[2] - 1)]
-                else:
-                    cut = [bin_size[0], random.randint(1, bin_size[1] - 1), bin_size[2]]
-                items.append({"depth": cut[0], "height": cut[1], "width": cut[2]})
-                bin_size = [bin_size[k] - cut[k] for k in range(3)]
-            cuts -= num_cuts
-    dataset = {"num_items": num_items, "bin_size": [bin_size[0], bin_size[1], bin_size[2]], "items": items}
-    return json.dumps(dataset, indent=4)
+    def generate(self):
+        items = []
+        cuts = int(self.items_number ** (1. / 3)) - 1
+        depth_slices = sorted(random.sample(range(1, self.box_depth), cuts))
+        depth_positions = [0, *depth_slices, self.box_depth]
+        for i in range(1, len(depth_positions)):
+            width_slices = sorted(random.sample(range(1, self.box_width), cuts))
+            width_positions = [0, *width_slices, self.box_width]
+            for j in range(1, len(width_positions)):
+                height_slices = sorted(random.sample(range(1, self.box_height), cuts))
+                height_positions = [0, *height_slices, self.box_height]
+                for k in range(1, len(height_positions)):
+                    items.append({
+                        "depth": depth_positions[i] - depth_positions[i-1],
+                        "height": height_positions[k] - height_positions[k-1],
+                        "width": width_positions[j] - width_positions[j-1],
+                    })
+        return self._to_json(items)
 
-# Example usage
-num_items = 9
-bin_size = [10, 10, 20]
-dataset = generate_dataset(num_items, bin_size)
-print(dataset)
+    def _to_json(self, items):
+        data = {
+            "num_items": self.items_number,
+            "bin_size": [self.box_width, self.box_height, self.box_depth],
+            "items": items
+        }
+        return json.dumps(data, indent=4)
+
+
+dg = DataGenerator(27, 10, 10, 10)
+print(dg.generate())
