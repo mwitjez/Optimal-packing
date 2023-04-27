@@ -14,6 +14,7 @@ class Plotter3d():
         ax.set_xlim(0, self.bin.width)
         ax.set_ylim(0, self.bin.height)
         ax.set_zlim3d(0, self.bin.depth)
+        ax.set_box_aspect([ub - lb for lb, ub in (getattr(ax, f'get_{a}lim')() for a in 'xyz')])
         for i, item in enumerate(self.bin.items):
             vertices = self._get_vertices(item)
             faces = [

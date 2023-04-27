@@ -25,7 +25,7 @@ class DataGenerator:
                         "height": height_positions[k] - height_positions[k-1],
                         "width": width_positions[j] - width_positions[j-1],
                     })
-        return self._to_json(items)
+        self._to_json(items)
 
     def _to_json(self, items):
         data = {
@@ -33,7 +33,8 @@ class DataGenerator:
             "bin_size": [self.box_width, self.box_height, self.box_depth],
             "items": items
         }
-        return json.dumps(data, indent=4)
+        with open('test2.json', 'w') as outfile:
+            json.dump(data, outfile, indent=4)
 
 
 dg = DataGenerator(27, 10, 10, 10)

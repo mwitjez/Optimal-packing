@@ -25,7 +25,7 @@ def run_2d():
 
 def run_3d():
     data = Data()
-    packer = DeepestBottomLeftPacker(data.test["items"], data.test["bin_size"][0], data.test["bin_size"][1], data.test["bin_size"][2]+100)
+    packer = DeepestBottomLeftPacker(data.test["items"], data.test["bin_size"][0], data.test["bin_size"][1], data.test["bin_size"][2]+10)
     population_size = 50
     parents_number = 5
     chromosome_length = data.test["num_items"]
@@ -39,4 +39,4 @@ def run_3d():
     genetic_algorithm.plot_stats()
 
 if __name__ == "__main__":
-    run_2d()
+    run_3d()

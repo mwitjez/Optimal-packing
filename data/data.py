@@ -9,7 +9,7 @@ class Data:
         self.C2 = self._load_2d_data('data/2D/C2.json')
         self.C3 = self._load_2d_data('data/2D/C3.json')
         self.C4 = self._load_2d_data('data/2D/C4.json')
-        self.test = self._load_3d_data('data/3D/test.json')
+        self.test = self._load_3d_data('data/3D/test2.json')
 
     def _load_2d_data(self, file):
         with open(file, 'r') as f:
