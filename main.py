@@ -4,6 +4,7 @@ from visualization.visualization_3d import Plotter3d
 from methods.bottom_left_fill import BottomLeftPacker
 from methods.deepest_bottom_left_fill import DeepestBottomLeftPacker
 from methods.genetic_algorithm import GeneticAlgorithm
+from methods.myneat import NeatPacker
 from data.data import Data
 
 
@@ -38,5 +39,10 @@ def run_3d():
     plotter.plot()
     genetic_algorithm.plot_stats()
 
+def run_neat_2d():
+    data = Data()
+    packer = NeatPacker(data.C1)
+    packer.run()
+
 if __name__ == "__main__":
-    run_3d()
+    run_neat_2d()

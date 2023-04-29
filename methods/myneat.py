@@ -1,68 +1,119 @@
 """
-2-input XOR example -- this is most likely the simplest possible example.
+Single-pole balancing experiment using a continuous-time recurrent neural network (CTRNN).
 """
 
+import multiprocessing
 import os
-
+import pickle
+import math
 import neat
-import visualize
 
-# 2-input XOR inputs and expected outputs.
-xor_inputs = [(0.0, 0.0), (0.0, 1.0), (1.0, 0.0), (1.0, 1.0)]
-xor_outputs = [(0.0,), (1.0,), (1.0,), (0.0,)]
-
-
-def eval_genomes(genomes, config):
-    for genome_id, genome in genomes:
-        genome.fitness = 4.0
-        net = neat.nn.FeedForwardNetwork.create(genome, config)
-        for xi, xo in zip(xor_inputs, xor_outputs):
-            output = net.activate(xi)
-            genome.fitness -= (output[0] - xo[0]) ** 2
+import numpy as np
+from itertools import chain
+import utils.neat_visualize as visualize
+from utils.bin import Bin
 
 
-def run(config_file):
-    # Load configuration.
-    config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
-                         neat.DefaultSpeciesSet, neat.DefaultStagnation,
-                         config_file)
 
-    # Create the population, which is the top-level object for a NEAT run.
-    p = neat.Population(config)
+class NeatPacker:
+    def __init__(self, data) -> None:
+        self.data = data
 
-    # Add a stdout reporter to show progress in the terminal.
-    p.add_reporter(neat.StdOutReporter(True))
-    stats = neat.StatisticsReporter()
-    p.add_reporter(stats)
-    p.add_reporter(neat.Checkpointer(5))
+    def eval_genomes(self, genomes, config):
+        for genome_id, genome in genomes:
+            net = neat.ctrnn.CTRNN.create(genome, config, 1)
 
-    # Run for up to 300 generations.
-    winner = p.run(eval_genomes, 300)
+            items, bin_size = self.data["items"], self.data["bin_size"]
+            bin = Bin(bin_size[0], bin_size[1])
+            net.reset()
+            fitness = 0.0
+            remaining_items = [[item.width, item.height] for item in items]
+            for _ in range(len(items)):
+                inputs = [*bin.map.flatten(), *list(chain.from_iterable(remaining_items))]
+                item, pos_x, pos_y = net.advance(inputs, 1, 1)
+                item = self.choose_item(remaining_items, item)
+                pos_x, pos_y = self.scale_position(bin, pos_x, pos_y)
+                remaining_items[remaining_items.index(item)] = [0, 0]
+                if self.is_valid_position(bin, item, pos_x, pos_y):
+                    self.mark_positions(bin, item, pos_x, pos_y)
+                    fitness += 1
+                else:
+                    fitness = 0
+                    break
+            #fitness = self.calculate_final_fitness(bin, fitness)
+            genome.fitness = fitness
 
-    # Display the winning genome.
-    print('\nBest genome:\n{!s}'.format(winner))
-
-    # Show output of the most fit genome against training data.
-    print('\nOutput:')
-    winner_net = neat.nn.FeedForwardNetwork.create(winner, config)
-    for xi, xo in zip(xor_inputs, xor_outputs):
-        output = winner_net.activate(xi)
-        print("input {!r}, expected output {!r}, got {!r}".format(xi, xo, output))
-
-    node_names = {-1: 'A', -2: 'B', 0: 'A XOR B'}
-    visualize.draw_net(config, winner, True, node_names=node_names)
-    visualize.draw_net(config, winner, True, node_names=node_names, prune_unused=True)
-    visualize.plot_stats(stats, ylog=False, view=True)
-    visualize.plot_species(stats, view=True)
-
-    p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-4')
-    p.run(eval_genomes, 10)
+    def sigmoid(self, x):
+        return 1 / (1 + math.exp(-x))
 
 
-if __name__ == '__main__':
-    # Determine path to configuration file. This path manipulation is
-    # here so that the script will run successfully regardless of the
-    # current working directory.
-    local_dir = os.path.dirname(__file__)
-    config_path = os.path.join(local_dir, 'config-feedforward')
-    run(config_path)
+    def choose_item(self, remaining_items, item):
+        """Returns the item that is chosen by the network."""
+        item_indx = int(len(remaining_items)*self.sigmoid(item))
+        return remaining_items[item_indx]
+
+
+    def scale_position(self, bin, x, y):
+        """Returns the scaled position of the rectangle."""
+        scaled_x = int(bin.width*self.sigmoid(x))
+        scaled_y = int(bin.height*self.sigmoid(y))
+        return scaled_x, scaled_y
+
+
+    def is_valid_position(self, bin, rectangle, x, y):
+        """Returns True if the rectangle can be placed at the given position, False otherwise."""
+        for i in range(y, y + rectangle[0]):
+            for j in range(x, x + rectangle[1]):
+                if bin.map[i][j] == 1:
+                    return False
+        return True
+
+
+    def mark_positions(self, bin, rectangle, x, y):
+        """Marks the positions of the rectangle in the bin map."""
+        bin.map[y:y+rectangle[0], x:x+rectangle[1]] = 1
+
+
+    def calculate_final_fitness(self, bin, fitness):
+        """Returns the final fitness of the genome."""
+        max_height = bin.map.nonzero()[0].max() + 1
+        total_area = bin.map.shape[0] * max_height
+        ones_area = np.sum(bin.map)
+        packing_density = ones_area / total_area
+        fitness = fitness + 10*packing_density + 10/max_height
+        return fitness
+
+
+    def run(self):
+        # Load the config file, which is assumed to live in
+        # the same directory as this script.
+        local_dir = os.path.dirname(__file__)
+        config_path = os.path.join(local_dir, 'config.txt')
+        config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
+                            neat.DefaultSpeciesSet, neat.DefaultStagnation,
+                            config_path)
+
+        pop = neat.Population(config)
+        stats = neat.StatisticsReporter()
+        pop.add_reporter(stats)
+        pop.add_reporter(neat.StdOutReporter(True))
+
+        winner = pop.run(self.eval_genomes, 300)
+
+        # Save the winner.
+        with open('winner-ctrnn', 'wb') as f:
+            pickle.dump(winner, f)
+
+        print(winner)
+
+        visualize.plot_stats(stats, ylog=True, view=True, filename="ctrnn-fitness.svg")
+        visualize.plot_species(stats, view=True, filename="ctrnn-speciation.svg")
+
+        node_names = {-1: 'x', -2: 'dx', -3: 'theta', -4: 'dtheta', 0: 'control'}
+        visualize.draw_net(config, winner, True, node_names=node_names)
+
+        visualize.draw_net(config, winner, view=True, node_names=node_names,
+                        filename="winner-ctrnn.gv")
+        visualize.draw_net(config, winner, view=True, node_names=node_names,
+                        filename="winner-ctrnn-pruned.gv", prune_unused=True)
+
