@@ -21,7 +21,7 @@ class NeatPacker:
             bin = Bin(bin_size[0], bin_size[1])
             fitness = 0.0
             remaining_items = [[item.width, item.height] for item in items]
-            for _ in range(len(items)):
+            for i in range(len(items)):
                 inputs = [
                     *bin.map.flatten(),
                     *list(chain.from_iterable(remaining_items)),
@@ -35,7 +35,6 @@ class NeatPacker:
                     fitness += 5
                     fitness = self.calculate_final_fitness(bin, fitness)
                 else:
-                    fitness = 0
                     break
             genome.fitness = fitness
 
@@ -44,8 +43,9 @@ class NeatPacker:
 
     def choose_item(self, remaining_items, item):
         """Returns the item that is chosen by the network."""
-        item_indx = int(len(remaining_items) * self.sigmoid(item))
-        return remaining_items[item_indx]
+        items  = list(filter(lambda x: x!=[0,0], remaining_items))
+        item_indx = int(len(items) * self.sigmoid(item))
+        return items[item_indx]
 
     def scale_position(self, bin, x, y):
         """Returns the scaled position of the rectangle."""
@@ -94,28 +94,25 @@ class NeatPacker:
         pop.add_reporter(stats)
         pop.add_reporter(neat.StdOutReporter(True))
 
-        winner = pop.run(self.eval_genomes, 300)
+        winner = pop.run(self.eval_genomes, 100)
 
         # Save the winner.
-        with open("winner-ctrnn", "wb") as f:
+        with open("winner", "wb") as f:
             pickle.dump(winner, f)
 
-        print(winner)
+        """ visualize.plot_stats(stats, ylog=True, view=True, filename="fitness.svg")
+        visualize.plot_species(stats, view=True, filename="speciation.svg")
 
-        visualize.plot_stats(stats, ylog=True, view=True, filename="ctrnn-fitness.svg")
-        visualize.plot_species(stats, view=True, filename="ctrnn-speciation.svg")
-
-        node_names = {-1: "x", -2: "dx", -3: "theta", -4: "dtheta", 0: "control"}
-        visualize.draw_net(config, winner, True, node_names=node_names)
+        visualize.draw_net(config, winner, True)
 
         visualize.draw_net(
-            config, winner, view=True, node_names=node_names, filename="winner-ctrnn.gv"
+            config, winner, view=True, filename="winner-ctrnn.gv"
         )
         visualize.draw_net(
             config,
             winner,
             view=True,
-            node_names=node_names,
-            filename="winner-ctrnn-pruned.gv",
+            filename="winner-pruned.gv",
             prune_unused=True,
         )
+        """
