@@ -13,17 +13,17 @@ class GeneticAlgorithm():
         self.mutation_rate = mutation_rate
         self.bottom_left_packer = bottom_left_packer
         self._offspring_factor = 0.5
-        self._best_fitness = []
-        self._max_heights = []
+        self.best_fitness = []
+        self.max_heights = []
 
     def run(self, num_generations, population_size):
         """Function that implements a genetic algorithm."""
         population = self._generate_population(population_size)
         for _ in tqdm(range(num_generations)):
             fitness_values = [self._calculate_fitness(chromosome) for chromosome in population]
-            self._best_fitness.append(max(fitness_values))
-            best_chromosome = population[fitness_values.index(self._best_fitness[-1])]
-            self._max_heights.append(self.bottom_left_packer.get_max_height(best_chromosome))
+            self.best_fitness.append(max(fitness_values))
+            best_chromosome = population[fitness_values.index(self.best_fitness[-1])]
+            self.max_heights.append(self.bottom_left_packer.get_max_height(best_chromosome))
             parents = self._select_parents(population, fitness_values)
             offspring = self._crossover(parents, int(self._offspring_factor * population_size))
             newcomers = self._generate_population(population_size - len(offspring) - len(parents) - 1)
@@ -116,8 +116,8 @@ class GeneticAlgorithm():
     def plot_stats(self):
         """Plots the best fitness and max heightsvalues for each generation."""
         fig, axs = plt.subplots(2, 1,)
-        axs[0].plot(self._best_fitness, label="Best fitness")
-        axs[1].plot(self._max_heights, label="Max height")
+        axs[0].plot(self.best_fitness, label="Best fitness")
+        axs[1].plot(self.max_heights, label="Max height")
         axs[0].legend()
         axs[1].legend()
         plt.xlabel("Generation")
