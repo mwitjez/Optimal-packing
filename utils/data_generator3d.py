@@ -10,7 +10,9 @@ class DataGenerator:
 
     def generate(self):
         items = []
-        cuts = int(self.items_number ** (1. / 3)) - 1
+        if self.items_number != round(self.items_number ** (1 / 3)) ** 3:
+            raise Exception("Number of items must be a perfect cube.")
+        cuts = round(self.items_number ** (1. / 3)) - 1
         depth_slices = sorted(random.sample(range(1, self.box_depth), cuts))
         depth_positions = [0, *depth_slices, self.box_depth]
         for i in range(1, len(depth_positions)):
@@ -25,6 +27,9 @@ class DataGenerator:
                         "height": height_positions[k] - height_positions[k-1],
                         "width": width_positions[j] - width_positions[j-1],
                     })
+        self_check = sum([item["depth"] * item["height"] * item["width"] for item in items])
+        if self_check != self.box_width * self.box_height * self.box_depth:
+            print("Something went wrong with data generation.")
         self._to_json(items)
 
     def _to_json(self, items):
@@ -33,9 +38,9 @@ class DataGenerator:
             "bin_size": [self.box_width, self.box_height, self.box_depth],
             "items": items
         }
-        with open('test2.json', 'w') as outfile:
+        with open(f'P{self.items_number}.json', 'w') as outfile:
             json.dump(data, outfile, indent=4)
 
 
-dg = DataGenerator(27, 10, 10, 10)
+dg = DataGenerator(64, 20, 20, 20)
 print(dg.generate())

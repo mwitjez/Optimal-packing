@@ -26,12 +26,12 @@ def run_2d():
 
 def run_3d():
     data = Data()
-    packer = DeepestBottomLeftPacker(data.test["items"], data.test["bin_size"][0], data.test["bin_size"][1], data.test["bin_size"][2]+10)
-    population_size = 50
-    parents_number = 5
-    chromosome_length = data.test["num_items"]
-    mutation_rate = 0.5
-    num_generations = 100
+    packer = DeepestBottomLeftPacker(data.P64["items"], data.P64["bin_size"][0], data.P64["bin_size"][1], data.P64["bin_size"][2]+10)
+    population_size = 100
+    parents_number = 30
+    chromosome_length = data.P64["num_items"]
+    mutation_rate = 0.4
+    num_generations = 50
     genetic_algorithm = GeneticAlgorithm(parents_number, chromosome_length, mutation_rate, packer)
     best_chromosome = genetic_algorithm.run(num_generations, population_size)
     solution = packer.pack_rectangles(best_chromosome)
@@ -45,4 +45,4 @@ def run_neat_2d():
     packer.run()
 
 if __name__ == "__main__":
-    run_neat_2d()
+    run_3d()

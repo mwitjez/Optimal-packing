@@ -21,13 +21,14 @@ class GeneticAlgorithm():
         population = self._generate_population(population_size)
         for _ in tqdm(range(num_generations)):
             fitness_values = [self._calculate_fitness(chromosome) for chromosome in population]
-            self._best_fitness.append(min(fitness_values))
+            self._best_fitness.append(max(fitness_values))
             best_chromosome = population[fitness_values.index(self._best_fitness[-1])]
             self._max_heights.append(self.bottom_left_packer.get_max_height(best_chromosome))
             parents = self._select_parents(population, fitness_values)
             offspring = self._crossover(parents, int(self._offspring_factor * population_size))
-            newcomers = self._generate_population(population_size - len(offspring) - len(parents))
+            newcomers = self._generate_population(population_size - len(offspring) - len(parents) - 1)
             population = self._mutate(offspring) + parents + newcomers
+            population.append(best_chromosome)
         return best_chromosome
 
     def _generate_population(self, population_size):
@@ -43,18 +44,24 @@ class GeneticAlgorithm():
         """Calculates the fitness value of a chromosome."""
         max_height = self.bottom_left_packer.get_max_height(chromosome)
         packing_density = self.bottom_left_packer.get_packing_density(chromosome)
-        fitness = max_height/packing_density
-        if math.isnan(fitness):
-            fitness = float("Inf")
+        fitness = 1000/(max_height)**3 + packing_density
+        if math.isnan(fitness) or math.isinf(fitness):
+            fitness = 0
         return fitness
 
     def _select_parents(self, population, fitness_values):
-        """Selects the best chromosomes to be parents for the next generation."""
+        """Selects the best chromosomes to be parents for the next generation using roulette wheel selection."""
         parents = []
+        total_fitness = sum(fitness_values)
+        probabilities = [fitness / total_fitness for fitness in fitness_values]
         for _ in range(self.parents_number):
-            best_fitness_index = fitness_values.index(min(fitness_values))
-            parents.append(population[best_fitness_index])
-            fitness_values[best_fitness_index] = float("Inf")
+            spin = random.uniform(0, 1)
+            cumulative_probability = 0
+            for i, probability in enumerate(probabilities):
+                cumulative_probability += probability
+                if spin <= cumulative_probability:
+                    parents.append(population[i])
+                    break
         return parents
 
     def _crossover(self, parents, offspring_size):
