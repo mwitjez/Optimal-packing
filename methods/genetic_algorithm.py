@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 
 
-class GeneticAlgorithm():
+class GeneticAlgorithm:
     """Genetic algorithm class"""
     def __init__(self, parents_number, chromosome_length, mutation_rate, bottom_left_packer):
         self.parents_number = parents_number

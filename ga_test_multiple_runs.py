@@ -31,10 +31,10 @@ def run_2d(runs_number):
 
 def run_3d(runs_number):
     data = Data()
-    packer = DeepestBottomLeftPacker(data.P27["items"], data.P27["bin_size"][0], data.P27["bin_size"][1], data.P27["bin_size"][2]+10)
+    packer = DeepestBottomLeftPacker(data.P64["items"], data.P64["bin_size"][0], data.P64["bin_size"][1], data.P64["bin_size"][2]+10)
     population_size = 100
     parents_number = 30
-    chromosome_length = data.P27["num_items"]
+    chromosome_length = data.P64["num_items"]
     mutation_rate = 0.4
     num_generations = 50
     best_heights =  np.empty((0,num_generations), int)
