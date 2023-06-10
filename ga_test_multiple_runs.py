@@ -8,12 +8,12 @@ from methods.genetic_algorithm import GeneticAlgorithm
 from data.data import Data
 
 
-def run_2d(runs_number):
-    data = Data()
-    packer = BottomLeftPacker(data.C2["items"], data.C2["bin_size"][0], data.C2["bin_size"][1]+100)
+def run_2d(runs_number, problem_name="C1"):
+    data = Data().data_2d[problem_name]
+    packer = BottomLeftPacker(data["items"], data["bin_size"][0], data["bin_size"][1]+10)
+    chromosome_length = data["num_items"]
     population_size = 50
     parents_number = 5
-    chromosome_length = data.C2["num_items"]
     mutation_rate = 0.8
     num_generations = 100
     best_heights =  np.empty((0,num_generations), int)
@@ -29,12 +29,12 @@ def run_2d(runs_number):
     plot_stats(best_fintesses, best_heights)
 
 
-def run_3d(runs_number):
-    data = Data()
-    packer = DeepestBottomLeftPacker(data.P64["items"], data.P64["bin_size"][0], data.P64["bin_size"][1], data.P64["bin_size"][2]+10)
+def run_3d(runs_number, problem_name="P8"):
+    data = Data().data_3d[problem_name]
+    packer = DeepestBottomLeftPacker(data["items"], data["bin_size"][0], data["bin_size"][1], data["bin_size"][2]+10)
+    chromosome_length = data["num_items"]
     population_size = 100
     parents_number = 30
-    chromosome_length = data.P64["num_items"]
     mutation_rate = 0.4
     num_generations = 50
     best_heights =  np.empty((0,num_generations), int)

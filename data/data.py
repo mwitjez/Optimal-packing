@@ -1,29 +1,35 @@
 import json
+import os
 
+from collections import defaultdict
 from utils.rectangle import Rectangle
 from utils.cuboid import Cuboid
+from utils.singleton import Singleton
 
-class Data:
+
+class Data(metaclass=Singleton):
     def __init__(self):
-        self.C1 = self._load_2d_data('data/2D/C1.json')
-        self.C2 = self._load_2d_data('data/2D/C2.json')
-        self.C3 = self._load_2d_data('data/2D/C3.json')
-        self.C4 = self._load_2d_data('data/2D/C4.json')
-        self.P8 = self._load_3d_data('data/3D/P8.json')
-        self.P27 = self._load_3d_data('data/3D/P27.json')
-        self.P64 = self._load_3d_data('data/3D/P64.json')
+        self.data_2d = self._load_2d_data()
+        self.data_3d = self._load_3d_data()
 
-
-    def _load_2d_data(self, file):
-        with open(file, 'r') as f:
-            data = json.load(f)
-        data["items"] = self._create_rectangle_list(data["items"])
+    def _load_2d_data(self):
+        data = defaultdict(dict)
+        for file in os.listdir("data/2D"):
+            if file.endswith(".json"):
+                filename = file.strip(".json")
+                with open(f"data/2D/{file}", 'r') as f:
+                    data[filename] = json.load(f)
+                data[filename]["items"] = self._create_rectangle_list(data[filename]["items"])
         return data
 
-    def _load_3d_data(self, file):
-        with open(file, 'r') as f:
-            data = json.load(f)
-        data["items"] = self._create_cuboid_list(data["items"])
+    def _load_3d_data(self):
+        data = defaultdict(dict)
+        for file in os.listdir("data/3D"):
+            if file.endswith(".json"):
+                filename = file.strip(".json")
+                with open(f"data/3D/{file}", 'r') as f:
+                    data[filename] = json.load(f)
+                data[filename]["items"] = self._create_cuboid_list(data[filename]["items"])
         return data
 
     def _create_rectangle_list(self, data):
