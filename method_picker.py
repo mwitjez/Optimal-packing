@@ -17,7 +17,7 @@ class MethodPicker:
         population_size = 50
         parents_number = 5
         mutation_rate = 0.8
-        num_generations = 100
+        num_generations = 50
         genetic_algorithm = GeneticAlgorithm(parents_number, chromosome_length, mutation_rate, packer)
         best_chromosome = genetic_algorithm.run(num_generations, population_size)
         solution = packer.pack_rectangles(best_chromosome)

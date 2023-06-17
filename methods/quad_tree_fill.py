@@ -1,5 +1,6 @@
 import numpy as np
 
+from scipy.spatial import cKDTree
 from utils.bin import Bin
 
 
@@ -36,24 +37,29 @@ class BottomLeftPacker:
         """Packs the rectangles in the given order."""
         bin = Bin(self.bin_width, self.bin_height)
         sorted_rectangles = [self.rectangles[i] for i in packing_order]
+        positions = [(x, y) for y in range(bin.height) for x in range(bin.width)]
+        tree = cKDTree(positions)
         for rectangle in sorted_rectangles:
-            for y in range(bin.height - rectangle.height + 1):
-                for x in range(bin.width - rectangle.width + 1):
-                    if self._is_valid_position(bin, rectangle, x, y):
-                        rectangle.x = x
-                        rectangle.y = y
-                        bin.items.append(rectangle)
-                        self._mark_positions(bin, rectangle, x, y)
-                        break
-                else:
-                    continue
-                break
+            valid_positions = []
+            for x, y in positions:
+                if self._is_valid_position(bin, rectangle, x, y):
+                    valid_positions.append((x, y))
+            if valid_positions:
+                _, indices = tree.query(valid_positions)
+                x, y = positions[indices[0]]
+                rectangle.x = x
+                rectangle.y = y
+                bin.items.append(rectangle)
+                self._mark_positions(bin, rectangle, x, y)
             else:
                 return None
         return bin
 
     def _is_valid_position(self, bin, rectangle, x, y):
         """Returns True if the rectangle can be placed at the given position, False otherwise."""
+        height, width = bin.map.shape
+        if y + rectangle.height > height or x + rectangle.width > width:
+            return False
         for i in range(y, y + rectangle.height):
             for j in range(x, x + rectangle.width):
                 if bin.map[i][j] == 1:

@@ -44,9 +44,10 @@ class GeneticAlgorithm:
         """Calculates the fitness value of a chromosome."""
         max_height = self.bottom_left_packer.get_max_height(chromosome)
         packing_density = self.bottom_left_packer.get_packing_density(chromosome)
-        fitness = 1000/(max_height)**3 + packing_density
-        if math.isnan(fitness) or math.isinf(fitness):
+        if max_height is None or packing_density is None:
             fitness = 0
+        else:
+            fitness = 1000/(max_height)**3 + packing_density
         return fitness
 
     def _select_parents(self, population, fitness_values):
