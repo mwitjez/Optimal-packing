@@ -4,7 +4,7 @@ from scipy.spatial import cKDTree
 from utils.bin import Bin
 
 
-class BottomLeftPacker:
+class QuadTreePacker:
     """
     A class representing the Bottom-Left Packing Algorithm.
     """
