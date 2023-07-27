@@ -2,9 +2,10 @@ import itertools
 import numpy as np
 
 from utils.bin3D import Bin3D
+from utils.base_packer import BasePacker
 
 
-class DeepestBottomLeftPacker:
+class DeepestBottomLeftPacker(BasePacker):
     """
     A class representing the Deepest-Bottom-Left Packing Algorithm.
     """

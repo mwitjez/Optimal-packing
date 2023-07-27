@@ -15,6 +15,7 @@ from data.data import Data
 
 
 class MethodPicker:
+
     @staticmethod
     def run_2d(problem_name="C1"):
         data = Data().data_2d[problem_name]
@@ -80,3 +81,25 @@ class MethodPicker:
         plotter = Plotter3d(solution)
         plotter.plot()
         genetic_algorithm.plot_stats()
+
+    @staticmethod
+    def run_evotorch_3d(problem_nname="P8"):
+        data = Data().data_3d[problem_nname]
+        problem = PackingProblem(data)
+        packer = BottomLeftPacker(
+            data["items"], data["bin_size"][0], data["bin_size"][1] + 10
+        )
+        ga = GeneticAlgorithm(
+            problem,
+            popsize=100,
+            operators=[
+                PartiallyMappedCrossOver(problem, tournament_size=4),
+            ],
+        )
+        _ = WandbLogger(ga, project="optimal_packing")
+        ga.run(10)
+        print("Solution with best fitness ever:", ga.status["best"])
+        best_chromosome = np.array(ga.status["best"]).tolist()
+        solution = packer.pack_rectangles(best_chromosome)
+        plotter = Plotter2d(solution)
+        plotter.plot()

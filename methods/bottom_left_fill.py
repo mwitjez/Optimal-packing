@@ -1,9 +1,10 @@
 import numpy as np
 
 from utils.bin import Bin
+from utils.base_packer import BasePacker
 
 
-class BottomLeftPacker:
+class BottomLeftPacker(BasePacker):
     """
     A class representing the Bottom-Left Packing Algorithm.
     """

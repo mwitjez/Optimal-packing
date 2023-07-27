@@ -7,11 +7,11 @@ from tqdm import tqdm
 
 class CustomGeneticAlgorithm:
     """Genetic algorithm class"""
-    def __init__(self, parents_number, chromosome_length, mutation_rate, bottom_left_packer):
+    def __init__(self, parents_number, chromosome_length, mutation_rate, packer):
         self.parents_number = parents_number
         self.chromosome_length = chromosome_length
         self.mutation_rate = mutation_rate
-        self.bottom_left_packer = bottom_left_packer
+        self.packer = packer
         self._offspring_factor = 0.5
         self.best_fitness = []
         self.max_heights = []
@@ -23,7 +23,7 @@ class CustomGeneticAlgorithm:
             fitness_values = [self._calculate_fitness(chromosome) for chromosome in population]
             self.best_fitness.append(max(fitness_values))
             best_chromosome = population[fitness_values.index(self.best_fitness[-1])]
-            self.max_heights.append(self.bottom_left_packer.get_max_height(best_chromosome))
+            self.max_heights.append(self.packer.get_max_height(best_chromosome))
             parents = self._select_parents(population, fitness_values)
             offspring = self._crossover(parents, int(self._offspring_factor * population_size))
             newcomers = self._generate_population(population_size - len(offspring) - len(parents) - 1)
@@ -42,8 +42,8 @@ class CustomGeneticAlgorithm:
 
     def _calculate_fitness(self, chromosome):
         """Calculates the fitness value of a chromosome."""
-        max_height = self.bottom_left_packer.get_max_height(chromosome)
-        packing_density = self.bottom_left_packer.get_packing_density(chromosome)
+        max_height = self.packer.get_max_height(chromosome)
+        packing_density = self.packer.get_packing_density(chromosome)
         if max_height is None or packing_density is None:
             fitness = 0
         else:
