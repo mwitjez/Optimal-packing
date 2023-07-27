@@ -11,7 +11,7 @@ class PackingProblem(Problem):
         super().__init__(
             objective_sense="max",
             solution_length=data["num_items"],
-            dtype=torch.int32,
+            dtype=torch.int64,
         )
 
     def _evaluate_batch(self, solutions: SolutionBatch):

@@ -37,20 +37,22 @@ class BottomLeftPacker:
         bin = Bin(self.bin_width, self.bin_height)
         sorted_rectangles = [self.rectangles[i] for i in packing_order]
         for rectangle in sorted_rectangles:
-            for y in range(bin.height - rectangle.height + 1):
-                for x in range(bin.width - rectangle.width + 1):
-                    if self._is_valid_position(bin, rectangle, x, y):
-                        rectangle.x = x
-                        rectangle.y = y
-                        bin.items.append(rectangle)
-                        self._mark_positions(bin, rectangle, x, y)
-                        break
-                else:
-                    continue
-                break
-            else:
+            x, y = self._find_valid_position(bin, rectangle)
+            if x is None:
                 return None
+            rectangle.x = x
+            rectangle.y = y
+            bin.items.append(rectangle)
+            self._mark_positions(bin, rectangle, x, y)
         return bin
+
+    def _find_valid_position(self, bin, rectangle):
+        """Finds a valid position for the given rectangle in the bin."""
+        for y in range(bin.height - rectangle.height + 1):
+            for x in range(bin.width - rectangle.width + 1):
+                if self._is_valid_position(bin, rectangle, x, y):
+                    return x, y
+        return None, None
 
     def _is_valid_position(self, bin, rectangle, x, y):
         """Returns True if the rectangle can be placed at the given position, False otherwise."""

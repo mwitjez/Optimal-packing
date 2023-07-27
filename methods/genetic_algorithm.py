@@ -69,6 +69,8 @@ class CustomGeneticAlgorithm:
         """Generates offspring through crossover of the selected parents.
         Implementation of partially mapped crossover"""
         offspring = []
+        if parents == []:
+            print("DUPA")
         for _ in range(offspring_size):
             parent1 = random.choice(parents)
             parent2 = random.choice(parents)

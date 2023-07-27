@@ -15,19 +15,17 @@ class DeepestBottomLeftPacker:
 
     def get_max_height(self, packing_order: list):
         """Returns the maximum height of the bin after packing the rectangles in the given order."""
-        try:
-            packed_bin = self.pack_rectangles(packing_order)
-        except:
-            return float('inf')
+        packed_bin = self.pack_rectangles(packing_order)
+        if packed_bin is None:
+            return None
         max_height = packed_bin.map.nonzero()[2].max() + 1
         return max_height
 
     def get_packing_density(self, packing_order: list):
         """Calculates the packing density of a bin."""
-        try:
-            packed_bin = self.pack_rectangles(packing_order)
-        except:
-            return float('inf')
+        packed_bin = self.pack_rectangles(packing_order)
+        if packed_bin is None:
+            return None
         max_width = packed_bin.map.nonzero()[0].max() + 1
         max_depth = packed_bin.map.nonzero()[1].max() + 1
         max_height = packed_bin.map.nonzero()[2].max() + 1
@@ -59,7 +57,7 @@ class DeepestBottomLeftPacker:
                     continue
                 break
             else:
-                raise Exception("No valid position found for rectangle.")
+                return None
         return bin
 
     def _is_valid_position(self, bin, rectangle, x, y, z):
