@@ -1,3 +1,4 @@
+import itertools
 import numpy as np
 
 from utils.bin3D import Bin3D
@@ -40,33 +41,30 @@ class DeepestBottomLeftPacker:
         bin = Bin3D(self.bin_width, self.bin_height, self.bin_depth)
         sorted_rectangles = [self.rectangles[i] for i in packing_order]
         for rectangle in sorted_rectangles:
-            for z in range(bin.depth - rectangle.depth + 1):
-                for y in range(bin.height - rectangle.height + 1):
-                    for x in range(bin.width - rectangle.width + 1):
-                        if self._is_valid_position(bin, rectangle, x, y, z):
-                            rectangle.x = x
-                            rectangle.y = y
-                            rectangle.z = z
-                            bin.items.append(rectangle)
-                            self._mark_positions(bin, rectangle, x, y, z)
-                            break
-                    else:
-                        continue
-                    break
-                else:
-                    continue
-                break
-            else:
+            position = self._find_valid_position(bin, rectangle)
+            if position is None:
                 return None
+            rectangle.x, rectangle.y, rectangle.z = position
+            bin.items.append(rectangle)
+            self._mark_positions(bin, rectangle, *position)
         return bin
+
+    def _find_valid_position(self, bin, rectangle):
+        """Finds a valid position for the given rectangle in the bin."""
+        for z in range(bin.depth - rectangle.depth + 1):
+            for y in range(bin.height - rectangle.height + 1):
+                for x in range(bin.width - rectangle.width + 1):
+                    if self._is_valid_position(bin, rectangle, x, y, z):
+                        return x, y, z
+        return None
 
     def _is_valid_position(self, bin, rectangle, x, y, z):
         """Checks if the given position is valid for the rectangle."""
-        for i in range(y, y + rectangle.height):
-            for j in range(x, x + rectangle.width):
-                for k in range(z, z + rectangle.depth):
-                    if bin.map[i][j][k] == 1:
-                        return False
+        for i, j, k in itertools.product(range(y, y + rectangle.height),
+                                        range(x, x + rectangle.width),
+                                        range(z, z + rectangle.depth)):
+            if bin.map[i][j][k] == 1:
+                return False
         return True
 
     def _mark_positions(self, bin, rectangle, x, y, z):

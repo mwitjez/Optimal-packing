@@ -76,7 +76,7 @@ class MethodPicker:
         )
         best_chromosome = genetic_algorithm.run(num_generations, population_size)
         solution = packer.pack_rectangles(best_chromosome)
-        solution.save_to_json()
+        #solution.save_to_json()
         plotter = Plotter3d(solution)
         plotter.plot()
         genetic_algorithm.plot_stats()
