@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 
 from methods.bottom_left_fill import BottomLeftPacker
 from methods.deepest_bottom_left_fill import DeepestBottomLeftPacker
-from methods.genetic_algorithm import GeneticAlgorithm
+from methods.genetic_algorithm import CustomGeneticAlgorithm
 from data.data import Data
 
 
@@ -20,7 +20,7 @@ def run_2d(runs_number, problem_name="C1"):
     best_fintesses =  np.empty((0,num_generations), int)
     for i in range(runs_number):
         print("Run number: ", i)
-        genetic_algorithm = GeneticAlgorithm(parents_number, chromosome_length, mutation_rate, packer)
+        genetic_algorithm = CustomGeneticAlgorithm(parents_number, chromosome_length, mutation_rate, packer)
         genetic_algorithm.run(num_generations, population_size)
         best_fintesses = np.append(best_fintesses, np.array([genetic_algorithm.best_fitness]), axis=0)
         best_heights = np.append(best_heights, np.array([genetic_algorithm.max_heights]), axis=0)
@@ -41,7 +41,7 @@ def run_3d(runs_number, problem_name="P8"):
     best_fintesses =  np.empty((0,num_generations), int)
     for i in range(runs_number):
         print("Run number: ", i)
-        genetic_algorithm = GeneticAlgorithm(parents_number, chromosome_length, mutation_rate, packer)
+        genetic_algorithm = CustomGeneticAlgorithm(parents_number, chromosome_length, mutation_rate, packer)
         genetic_algorithm.run(num_generations, population_size)
         best_fintesses = np.append(best_fintesses, np.array([genetic_algorithm.best_fitness]), axis=0)
         best_heights = np.append(best_heights, np.array([genetic_algorithm.max_heights]), axis=0)

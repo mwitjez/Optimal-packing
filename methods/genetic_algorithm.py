@@ -5,13 +5,13 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 
 
-class GeneticAlgorithm:
+class CustomGeneticAlgorithm:
     """Genetic algorithm class"""
-    def __init__(self, parents_number, chromosome_length, mutation_rate, bottom_left_packer):
+    def __init__(self, parents_number, chromosome_length, mutation_rate, packer):
         self.parents_number = parents_number
         self.chromosome_length = chromosome_length
         self.mutation_rate = mutation_rate
-        self.bottom_left_packer = bottom_left_packer
+        self.packer = packer
         self._offspring_factor = 0.5
         self.best_fitness = []
         self.max_heights = []
@@ -23,7 +23,7 @@ class GeneticAlgorithm:
             fitness_values = [self._calculate_fitness(chromosome) for chromosome in population]
             self.best_fitness.append(max(fitness_values))
             best_chromosome = population[fitness_values.index(self.best_fitness[-1])]
-            self.max_heights.append(self.bottom_left_packer.get_max_height(best_chromosome))
+            self.max_heights.append(self.packer.get_max_height(best_chromosome))
             parents = self._select_parents(population, fitness_values)
             offspring = self._crossover(parents, int(self._offspring_factor * population_size))
             newcomers = self._generate_population(population_size - len(offspring) - len(parents) - 1)
@@ -42,11 +42,12 @@ class GeneticAlgorithm:
 
     def _calculate_fitness(self, chromosome):
         """Calculates the fitness value of a chromosome."""
-        max_height = self.bottom_left_packer.get_max_height(chromosome)
-        packing_density = self.bottom_left_packer.get_packing_density(chromosome)
-        fitness = 1000/(max_height)**3 + packing_density
-        if math.isnan(fitness) or math.isinf(fitness):
+        max_height = self.packer.get_max_height(chromosome)
+        packing_density = self.packer.get_packing_density(chromosome)
+        if max_height is None or packing_density is None:
             fitness = 0
+        else:
+            fitness = 1000/(max_height)**3 + packing_density
         return fitness
 
     def _select_parents(self, population, fitness_values):
@@ -68,6 +69,8 @@ class GeneticAlgorithm:
         """Generates offspring through crossover of the selected parents.
         Implementation of partially mapped crossover"""
         offspring = []
+        if parents == []:
+            print("DUPA")
         for _ in range(offspring_size):
             parent1 = random.choice(parents)
             parent2 = random.choice(parents)
