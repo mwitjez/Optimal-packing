@@ -37,12 +37,12 @@ class MethodPicker:
         genetic_algorithm.plot_stats()
 
     @staticmethod
-    def run_evotorch_2d(problem_nname="C1"):
-        data = Data().data_2d[problem_nname]
-        problem = PackingProblem(data)
+    def run_evotorch_2d(problem_name="C1"):
+        data = Data().data_2d[problem_name]
         packer = BottomLeftPacker(
             data["items"], data["bin_size"][0], data["bin_size"][1] + 10
         )
+        problem = PackingProblem(data, packer)
         ga = GeneticAlgorithm(
             problem,
             popsize=100,
@@ -83,12 +83,15 @@ class MethodPicker:
         genetic_algorithm.plot_stats()
 
     @staticmethod
-    def run_evotorch_3d(problem_nname="P8"):
-        data = Data().data_3d[problem_nname]
-        problem = PackingProblem(data)
-        packer = BottomLeftPacker(
-            data["items"], data["bin_size"][0], data["bin_size"][1] + 10
+    def run_evotorch_3d(problem_name="P8"):
+        data = Data().data_3d[problem_name]
+        packer = DeepestBottomLeftPacker(
+            data["items"],
+            data["bin_size"][0],
+            data["bin_size"][1],
+            data["bin_size"][2] + 10,
         )
+        problem = PackingProblem(data, packer)
         ga = GeneticAlgorithm(
             problem,
             popsize=100,
@@ -101,5 +104,5 @@ class MethodPicker:
         print("Solution with best fitness ever:", ga.status["best"])
         best_chromosome = np.array(ga.status["best"]).tolist()
         solution = packer.pack_rectangles(best_chromosome)
-        plotter = Plotter2d(solution)
+        plotter = Plotter3d(solution)
         plotter.plot()
