@@ -1,6 +1,5 @@
 import numpy as np
 
-from evotorch.operators import OnePointCrossOver
 from evotorch.logging import WandbLogger, StdOutLogger
 from evotorch.algorithms import GeneticAlgorithm
 
@@ -47,11 +46,12 @@ class MethodPicker:
             problem,
             popsize=100,
             operators=[
-                PartiallyMappedCrossOver(problem, tournament_size=4),
+                PartiallyMappedCrossOver(problem, tournament_size=50),
             ],
         )
-        _ = WandbLogger(ga, project="optimal_packing")
-        ga.run(10)
+        WandbLogger(ga, project="optimal_packing")
+        StdOutLogger(ga)
+        ga.run(50)
         print("Solution with best fitness ever:", ga.status["best"])
         best_chromosome = np.array(ga.status["best"]).tolist()
         solution = packer.pack_rectangles(best_chromosome)
@@ -96,11 +96,12 @@ class MethodPicker:
             problem,
             popsize=100,
             operators=[
-                PartiallyMappedCrossOver(problem, tournament_size=4),
+                PartiallyMappedCrossOver(problem, tournament_size=50),
             ],
         )
-        _ = WandbLogger(ga, project="optimal_packing")
-        ga.run(10)
+        WandbLogger(ga, project="optimal_packing")
+        StdOutLogger(ga)
+        ga.run(50)
         print("Solution with best fitness ever:", ga.status["best"])
         best_chromosome = np.array(ga.status["best"]).tolist()
         solution = packer.pack_rectangles(best_chromosome)

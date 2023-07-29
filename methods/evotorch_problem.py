@@ -5,13 +5,14 @@ from evotorch import Problem, SolutionBatch
 
 from utils.base_packer import BasePacker
 
+
 class PackingProblem(Problem):
     def __init__(self, data: dict, packer: BasePacker):
         self.packer = packer
         super().__init__(
             objective_sense="max",
             solution_length=data["num_items"],
-            dtype=torch.int64,
+            dtype=torch.int64
         )
 
     def _evaluate_batch(self, solutions: SolutionBatch):
