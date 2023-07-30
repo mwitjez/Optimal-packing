@@ -1,7 +1,9 @@
 import numpy as np
+import torch
 
 from evotorch.logging import WandbLogger, StdOutLogger
 from evotorch.algorithms import GeneticAlgorithm
+from evotorch.operators import GaussianMutation
 
 from visualization.visualization_2d import Plotter2d
 from visualization.visualization_3d import Plotter3d
@@ -10,6 +12,7 @@ from methods.deepest_bottom_left_fill import DeepestBottomLeftPacker
 from methods.genetic_algorithm import CustomGeneticAlgorithm
 from methods.evotorch_problem import PackingProblem
 from methods.evotorch_pmx import PartiallyMappedCrossOver
+from methods.evotorch_mpox import MultiParentOrderCrossOver
 from data.data import Data
 
 
@@ -46,7 +49,7 @@ class MethodPicker:
             problem,
             popsize=100,
             operators=[
-                PartiallyMappedCrossOver(problem, tournament_size=50),
+                MultiParentOrderCrossOver(parents_per_child=4, problem=problem, tournament_size=10),
             ],
         )
         WandbLogger(ga, project="optimal_packing")
