@@ -35,35 +35,47 @@ class MultiParentOrderCrossOver(CrossOver):
         return parents
 
     def _do_cross_over(self, parents: torch.Tensor) -> SolutionBatch:
-        parents_split = torch.split(parents, self.parents_per_child, dim=0)
-        number_of_children = len(parents_split)
+        parent_groups = torch.split(parents, self.parents_per_child, dim=0)
+        number_of_children = len(parent_groups)
         children = torch.full((number_of_children, len(parents[0])), -1)
-        crossover_points = torch.randint(1, len(parents[0]), (self.parents_per_child - 1,)).sort()[0]
-        crossover_points = torch.cat([torch.tensor([0]), crossover_points, torch.tensor([len(parents[0])])])
+        crossover_points = self._generate_crossover_points(parents)
 
-        for n, parents in enumerate(parents_split):
-            #step 1
-            children[n][crossover_points[1]:crossover_points[2]] = parents[1][crossover_points[1]:crossover_points[2]]
-            #step 2
-            for j in range(2, self.parents_per_child):
-                for x in range(crossover_points[j], crossover_points[j+1]):
-                    if parents[j][x] not in children[n]:
-                        children[n][x] = parents[j][x]
-                    else:
-                        for y in range(x, x+len(parents[j])):
-                            current_index = y % len(parents[j])
-                            if parents[j][current_index] not in children[n]:
-                                children[n][x] = parents[j][current_index]
-                                break
-            #step 3
-            for x in range(crossover_points[0], crossover_points[1]):
-                if parents[0][x] not in children[n]:
-                    children[n][x] = parents[0][x]
-                else:
-                    for y in range(x, x+len(parents[j])):
-                        current_index = y % len(parents[j])
-                        if parents[j][current_index] not in children[n]:
-                            children[n][x] = parents[j][current_index]
-                            break
+        for i, parents in enumerate(parent_groups):
+            children[i] = self._single_child_crossover(parents, crossover_points)
 
         return self._make_children_batch(children)
+
+    def _generate_crossover_points(self, parents):
+        crossover_points = torch.randint(1, len(parents[0]), (self.parents_per_child - 1,)).sort()[0]
+        return torch.cat([torch.tensor([0]), crossover_points, torch.tensor([len(parents[0])])])
+
+    def _single_child_crossover(self, parents: torch.Tensor, crossover_points: torch.Tensor) -> torch.Tensor:
+        child = self._copy_segment_from_second_parent(parents, crossover_points)
+        child = self._fill_remaining_positions(child, parents, crossover_points)
+        child = self._fill_remaining_positions_from_first_parent(child, parents, crossover_points)
+        return child
+
+    def _copy_segment_from_second_parent(self, parents: torch.Tensor, crossover_points: torch.Tensor) -> torch.Tensor:
+        child = torch.full((len(parents[0]),), -1)
+        child[crossover_points[1]:crossover_points[2]] = parents[1][crossover_points[1]:crossover_points[2]]
+        return child
+
+    def _fill_remaining_positions(self, child: torch.Tensor, parents: torch.Tensor, crossover_points: torch.Tensor) -> torch.Tensor:
+        for j in range(2, self.parents_per_child):
+            child = self._fill_from_parent(child, parents, crossover_points, parent_index=j)
+        return child
+
+    def _fill_remaining_positions_from_first_parent(self, child: torch.Tensor, parents: torch.Tensor, crossover_points: torch.Tensor) -> torch.Tensor:
+        return self._fill_from_parent(child, parents, crossover_points, parent_index=0)
+
+    def _fill_from_parent(self, child: torch.Tensor, parents: torch.Tensor, crossover_points: torch.Tensor, parent_index: int) -> torch.Tensor:
+        for x in range(crossover_points[parent_index], crossover_points[parent_index+1]):
+            if parents[0][x] not in child:
+                child[x] = parents[0][x]
+            else:
+                for y in range(x, x+len(parents[0])):
+                    current_index = y % len(parents[0])
+                    if parents[0][current_index] not in child:
+                        child[x] = parents[0][current_index]
+                        break
+        return child

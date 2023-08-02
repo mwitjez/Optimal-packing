@@ -3,7 +3,7 @@ import torch
 
 from evotorch.logging import WandbLogger, StdOutLogger
 from evotorch.algorithms import GeneticAlgorithm
-from evotorch.operators import GaussianMutation
+from evotorch.operators import GaussianMutation, CutAndSplice
 
 from visualization.visualization_2d import Plotter2d
 from visualization.visualization_3d import Plotter3d
@@ -14,10 +14,12 @@ from methods.evotorch_problem import PackingProblem
 from methods.evotorch_pmx import PartiallyMappedCrossOver
 from methods.evotorch_mpox import MultiParentOrderCrossOver
 from data.data import Data
+from utils.time_wrapper import timing
 
 
 class MethodPicker:
 
+    @timing
     @staticmethod
     def run_2d(problem_name="C1"):
         data = Data().data_2d[problem_name]
@@ -25,9 +27,9 @@ class MethodPicker:
             data["items"], data["bin_size"][0], data["bin_size"][1] + 10
         )
         chromosome_length = data["num_items"]
-        population_size = 50
-        parents_number = 5
-        mutation_rate = 0.8
+        population_size = 100
+        parents_number = 10
+        mutation_rate = 0.2
         num_generations = 50
         genetic_algorithm = CustomGeneticAlgorithm(
             parents_number, chromosome_length, mutation_rate, packer
@@ -38,6 +40,7 @@ class MethodPicker:
         plotter.plot()
         genetic_algorithm.plot_stats()
 
+    @timing
     @staticmethod
     def run_evotorch_2d(problem_name="C1"):
         data = Data().data_2d[problem_name]
@@ -61,6 +64,7 @@ class MethodPicker:
         plotter = Plotter2d(solution)
         plotter.plot()
 
+    @timing
     @staticmethod
     def run_3d(problem_name="P8"):
         data = Data().data_3d[problem_name]
@@ -85,6 +89,7 @@ class MethodPicker:
         plotter.plot()
         genetic_algorithm.plot_stats()
 
+    @timing
     @staticmethod
     def run_evotorch_3d(problem_name="P8"):
         data = Data().data_3d[problem_name]
@@ -99,7 +104,7 @@ class MethodPicker:
             problem,
             popsize=100,
             operators=[
-                PartiallyMappedCrossOver(problem, tournament_size=50),
+                MultiParentOrderCrossOver(parents_per_child=4, problem=problem, tournament_size=10),
             ],
         )
         WandbLogger(ga, project="optimal_packing")
