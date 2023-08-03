@@ -13,6 +13,7 @@ from methods.genetic_algorithm import CustomGeneticAlgorithm
 from methods.evotorch_problem import PackingProblem
 from methods.evotorch_pmx import PartiallyMappedCrossOver
 from methods.evotorch_mpox import MultiParentOrderCrossOver
+from methods.evotorch_custom_mutation import OrderBasedMutation
 from data.data import Data
 from utils.time_wrapper import timing
 
@@ -29,8 +30,8 @@ class MethodPicker:
         chromosome_length = data["num_items"]
         population_size = 100
         parents_number = 10
-        mutation_rate = 0.2
-        num_generations = 50
+        mutation_rate = 0.8
+        num_generations = 200
         genetic_algorithm = CustomGeneticAlgorithm(
             parents_number, chromosome_length, mutation_rate, packer
         )
@@ -50,14 +51,16 @@ class MethodPicker:
         problem = PackingProblem(data, packer)
         ga = GeneticAlgorithm(
             problem,
-            popsize=100,
+            popsize=128,
             operators=[
-                MultiParentOrderCrossOver(parents_per_child=4, problem=problem, tournament_size=10),
+                MultiParentOrderCrossOver(parents_per_child=4, problem=problem, tournament_size=16),
+                OrderBasedMutation(problem=problem, mutation_probability=0.05),
             ],
+            elitist=False
         )
         WandbLogger(ga, project="optimal_packing")
         StdOutLogger(ga)
-        ga.run(50)
+        ga.run(100)
         print("Solution with best fitness ever:", ga.status["best"])
         best_chromosome = np.array(ga.status["best"]).tolist()
         solution = packer.pack_rectangles(best_chromosome)
