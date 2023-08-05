@@ -7,13 +7,13 @@ from evotorch.operators import GaussianMutation, CutAndSplice
 
 from visualization.visualization_2d import Plotter2d
 from visualization.visualization_3d import Plotter3d
-from methods.bottom_left_fill import BottomLeftPacker
-from methods.deepest_bottom_left_fill import DeepestBottomLeftPacker
-from methods.genetic_algorithm import CustomGeneticAlgorithm
-from methods.evotorch_problem import PackingProblem
-from methods.evotorch_pmx import PartiallyMappedCrossOver
-from methods.evotorch_mpox import MultiParentOrderCrossOver
-from methods.evotorch_custom_mutation import OrderBasedMutation
+from methods.GA.bottom_left_fill import BottomLeftPacker
+from methods.GA.deepest_bottom_left_fill import DeepestBottomLeftPacker
+from methods.GA.genetic_algorithm import CustomGeneticAlgorithm
+from methods.GA.evotorch_problem import PackingProblem
+from methods.GA.evotorch_pmx import PartiallyMappedCrossOver
+from methods.GA.evotorch_mpox import MultiParentOrderCrossOver
+from methods.GA.evotorch_custom_mutation import OrderBasedMutation
 from data.data import Data
 from utils.time_wrapper import timing
 
