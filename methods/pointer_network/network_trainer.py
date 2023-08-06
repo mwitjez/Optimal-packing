@@ -1,6 +1,6 @@
 import torch
 from torch.autograd import Variable
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, random_split
 from evotorch.neuroevolution import NEProblem
 from evotorch.logging import StdOutLogger
 from ..GA.bottom_left_fill import BottomLeftPacker
@@ -15,11 +15,22 @@ from .dataset import PackingDataset
 class NetworkTrainer:
     def __init__(self) -> None:
         self.dataset = PackingDataset()
-        self.dataloader = DataLoader(self.dataset, batch_size=1, shuffle=True)
+        self.train_dataloader, self.test_dataloader = self.train_test_split()
+
+    def train_test_split(self, train_proportion: float = 0.8):
+        train_size = int(train_proportion * len(self.dataset))
+        test_size = len(self.dataset) - train_size
+
+        train_dataset, test_dataset = random_split(self.dataset, [train_size, test_size])
+
+        batch_size = 1
+        train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+        test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+        return train_loader, test_loader
 
     @torch.no_grad()
     def eval_model(self, network: PointerNet):
-        iterator = tqdm(self.dataloader, unit="Batch")
+        iterator = tqdm(self.train_dataloader, unit="Batch")
         score = 0
         for i_batch, sample_batched in enumerate(iterator):
             input = Variable(sample_batched["net_input"])
@@ -54,7 +65,7 @@ class NetworkTrainer:
                 "dropout": 0,
             },
             network_eval_func=self.eval_model,
-            num_actors=16,
+            num_actors="max",
         )
         searcher = PGPE(
             problem,
@@ -62,6 +73,7 @@ class NetworkTrainer:
             radius_init=2.25,
             center_learning_rate=0.2,
             stdev_learning_rate=0.1,
+            distributed=True,
         )
         logger = StdOutLogger(searcher)
         searcher.run(50)
