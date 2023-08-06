@@ -1,4 +1,6 @@
 import torch
+import glob
+
 from torch.utils.data import Dataset
 
 
@@ -20,7 +22,27 @@ class PackingDataset(Dataset):
             ([(3, 3), (4, 1), (1, 2), (3, 2), (1, 1)], (20, 20)),
             ([(4, 1), (1, 2), (2, 1)], (10, 10)),
             ([(3, 3), (4, 1), (1, 2), (3, 2)], (10, 10)),
+            ([(1, 2), (2, 1), (2, 2)], (10, 10)),
+            ([(3, 3), (4, 1), (1, 2), (3, 2), (1, 1)], (20, 20)),
+            ([(4, 1), (1, 2), (2, 1)], (10, 10)),
+            ([(3, 3), (4, 1), (1, 2), (3, 2)], (10, 10)),
+            ([(1, 2), (2, 1), (2, 2)], (10, 10)),
+            ([(3, 3), (4, 1), (1, 2), (3, 2), (1, 1)], (20, 20)),
+            ([(4, 1), (1, 2), (2, 1)], (10, 10)),
+            ([(3, 3), (4, 1), (1, 2), (3, 2)], (10, 10)),
+            ([(1, 2), (2, 1), (2, 2)], (10, 10)),
+            ([(3, 3), (4, 1), (1, 2), (3, 2), (1, 1)], (20, 20)),
+            ([(4, 1), (1, 2), (2, 1)], (10, 10)),
+            ([(3, 3), (4, 1), (1, 2), (3, 2)], (10, 10)),
         ]
 
     def _load_data(self):
-        pass
+        file_paths = glob.glob("data/2D_network_data/*/*")
+        data = []
+        for file_path in file_paths:
+            with open(file_path) as file:
+                file_data = file.readlines()
+                bin_size = tuple(int(size) for size in file_data[1].split())
+                items = [tuple(map(int, line.split())) for line in file_data[2:]]
+                data.append((items, bin_size))
+        return data

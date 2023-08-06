@@ -1,3 +1,4 @@
-from methods.pointer_network.train import neuroevolution_training
+from methods.pointer_network.network_trainer import NetworkTrainer
 
-neuroevolution_training()
+trainer = NetworkTrainer()
+trainer.train()
