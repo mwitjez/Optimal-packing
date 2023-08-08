@@ -16,6 +16,8 @@ from methods.GA.evotorch_mpox import MultiParentOrderCrossOver
 from methods.GA.evotorch_custom_mutation import OrderBasedMutation
 from data.data import Data
 from utils.time_wrapper import timing
+from utils.data_generator2d import DataGenerator
+from utils.rectangle import Rectangle
 
 
 class MethodPicker:
@@ -48,7 +50,7 @@ class MethodPicker:
         packer = BottomLeftPacker(
             data["items"], data["bin_size"][0], data["bin_size"][1] + 10
         )
-        problem = PackingProblem(data, packer)
+        problem = PackingProblem(data["num_items"], packer)
         ga = GeneticAlgorithm(
             problem,
             popsize=128,
@@ -63,6 +65,19 @@ class MethodPicker:
         ga.run(100)
         print("Solution with best fitness ever:", ga.status["best"])
         best_chromosome = np.array(ga.status["best"]).tolist()
+        solution = packer.pack_rectangles(best_chromosome)
+        plotter = Plotter2d(solution)
+        plotter.plot()
+
+    @staticmethod
+    def test2d_data(problem_name="C1"):
+        dg = DataGenerator(1, 10, 10)
+        data = dg.generate()[0]
+        rectangles = [Rectangle(rectangle[0], rectangle[1]) for rectangle in data[0]]
+        packer = BottomLeftPacker(
+            rectangles, data[2][0], data[2][1] + 10
+        )
+        best_chromosome = data[1]
         solution = packer.pack_rectangles(best_chromosome)
         plotter = Plotter2d(solution)
         plotter.plot()
@@ -102,7 +117,7 @@ class MethodPicker:
             data["bin_size"][1],
             data["bin_size"][2] + 10,
         )
-        problem = PackingProblem(data, packer)
+        problem = PackingProblem(data["num_items"], packer)
         ga = GeneticAlgorithm(
             problem,
             popsize=100,

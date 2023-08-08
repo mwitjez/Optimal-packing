@@ -299,10 +299,14 @@ class PointerNet(nn.Module):
 
         batch_size = inputs.size(0)
         input_length = inputs.size(1)
+        batch_norm = nn.BatchNorm1d(num_features=inputs.size(2))
 
         decoder_input0 = self.decoder_input0.unsqueeze(0).expand(batch_size, -1)
+
+        # Loop over the batches and apply the BatchNorm1d layer
         for i, batch in enumerate(inputs):
-            inputs[i] = nn.BatchNorm1d(num_features=inputs.size(2))(batch)
+            inputs[i] = batch_norm(batch)
+
         embedded_inputs = self.embedding(inputs).view(batch_size, input_length, -1)
 
         encoder_hidden0 = self.encoder.init_hidden(embedded_inputs)

@@ -3,18 +3,20 @@ import glob
 
 from torch.utils.data import Dataset
 
+from utils.data_generator2d import DataGenerator
+
 
 class PackingDataset(Dataset):
     def __init__(self):
-        self.data = self._sample_data()
+        self.data = self._generate_data()
 
     def __len__(self):
         return len(self.data)
 
     def __getitem__(self, index):
-        input_tuples, bin_size = self.data[index]
+        input_tuples, solution, bin_size = self.data[index]
         input_tuples = torch.tensor(input_tuples, dtype=torch.float32)
-        return {"net_input": input_tuples, "bin_size": bin_size}
+        return {"net_input": input_tuples, "solution": solution, "bin_size": bin_size}
 
     def _sample_data(self):
         return [
@@ -46,3 +48,7 @@ class PackingDataset(Dataset):
                 items = [tuple(map(int, line.split())) for line in file_data[2:]]
                 data.append((items, bin_size))
         return data
+
+    def _generate_data(self):
+        d = DataGenerator(100, 10, 10)
+        return d.generate()

@@ -7,11 +7,11 @@ from utils.base_packer import BasePacker
 
 
 class PackingProblem(Problem):
-    def __init__(self, data: dict, packer: BasePacker):
+    def __init__(self, items_number: int, packer: BasePacker):
         self.packer = packer
         super().__init__(
             objective_sense="max",
-            solution_length=data["num_items"],
+            solution_length=items_number,
             dtype=torch.int64
         )
 
