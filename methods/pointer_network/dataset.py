@@ -1,7 +1,7 @@
 import torch
 import glob
 
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, TensorDataset
 
 from utils.data_generator2d import DataGenerator
 
@@ -14,29 +14,10 @@ class PackingDataset(Dataset):
         return len(self.data)
 
     def __getitem__(self, index):
-        input_tuples, solution, bin_size = self.data[index]
+        input_tuples, solution = self.data[index]
         input_tuples = torch.tensor(input_tuples, dtype=torch.float32)
-        return {"net_input": input_tuples, "solution": solution, "bin_size": bin_size}
-
-    def _sample_data(self):
-        return [
-            ([(1, 2), (2, 1), (2, 2)], (10, 10)),
-            ([(3, 3), (4, 1), (1, 2), (3, 2), (1, 1)], (20, 20)),
-            ([(4, 1), (1, 2), (2, 1)], (10, 10)),
-            ([(3, 3), (4, 1), (1, 2), (3, 2)], (10, 10)),
-            ([(1, 2), (2, 1), (2, 2)], (10, 10)),
-            ([(3, 3), (4, 1), (1, 2), (3, 2), (1, 1)], (20, 20)),
-            ([(4, 1), (1, 2), (2, 1)], (10, 10)),
-            ([(3, 3), (4, 1), (1, 2), (3, 2)], (10, 10)),
-            ([(1, 2), (2, 1), (2, 2)], (10, 10)),
-            ([(3, 3), (4, 1), (1, 2), (3, 2), (1, 1)], (20, 20)),
-            ([(4, 1), (1, 2), (2, 1)], (10, 10)),
-            ([(3, 3), (4, 1), (1, 2), (3, 2)], (10, 10)),
-            ([(1, 2), (2, 1), (2, 2)], (10, 10)),
-            ([(3, 3), (4, 1), (1, 2), (3, 2), (1, 1)], (20, 20)),
-            ([(4, 1), (1, 2), (2, 1)], (10, 10)),
-            ([(3, 3), (4, 1), (1, 2), (3, 2)], (10, 10)),
-        ]
+        solution = torch.tensor(solution, dtype=torch.int64)
+        return input_tuples, solution
 
     def _load_data(self):
         file_paths = glob.glob("data/2D_network_data/*/*")
@@ -50,5 +31,5 @@ class PackingDataset(Dataset):
         return data
 
     def _generate_data(self):
-        d = DataGenerator(100, 10, 10)
+        d = DataGenerator(10, 10, 10)
         return d.generate()

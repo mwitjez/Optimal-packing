@@ -1,4 +1,5 @@
 import random
+import torch
 from collections import defaultdict
 
 class DataGenerator():
@@ -22,16 +23,13 @@ class DataGenerator():
             random.shuffle(shuffled_rectangles)
             index_dict = defaultdict(list)
             shuffled_rectangles_copy = shuffled_rectangles.copy()
-            # Create a dictionary to store indexes of items in the shuffled list
             for item in shuffled_rectangles:
                 index_dict[item].append(shuffled_rectangles_copy.index(item))
                 shuffled_rectangles_copy[shuffled_rectangles_copy.index(item)] = None
-
-            # Create a list of indexes for the shuffled list
             sequence = []
             for item in rectangles:
                 sequence.append(index_dict[item][0])
                 index_dict[item].pop(0)
 
-            data.append((shuffled_rectangles, sequence, (self.bin_x, self.bin_y)))
+            data.append((shuffled_rectangles, sequence))
         return data
