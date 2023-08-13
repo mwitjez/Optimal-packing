@@ -3,7 +3,7 @@ import torch
 
 from evotorch.logging import WandbLogger, StdOutLogger
 from evotorch.algorithms import GeneticAlgorithm
-from evotorch.operators import GaussianMutation, CutAndSplice
+from rectpack import newPacker
 
 from visualization.visualization_2d import Plotter2d
 from visualization.visualization_3d import Plotter3d
@@ -14,6 +14,7 @@ from methods.GA.evotorch_problem import PackingProblem
 from methods.GA.evotorch_pmx import PartiallyMappedCrossOver
 from methods.GA.evotorch_mpox import MultiParentOrderCrossOver
 from methods.GA.evotorch_custom_mutation import OrderBasedMutation
+from methods.pointer_network.network_trainer import NetworkTrainer
 from data.data import Data
 from utils.time_wrapper import timing
 from utils.data_generator2d import DataGenerator
@@ -133,3 +134,25 @@ class MethodPicker:
         solution = packer.pack_rectangles(best_chromosome)
         plotter = Plotter3d(solution)
         plotter.plot()
+
+    @staticmethod
+    def train_pointer_network_2d():
+        trainer = NetworkTrainer()
+        trainer.train()
+        trainer.save_network()
+
+    @staticmethod
+    def run_pointer_network_2d(problem_name="C1"):
+        data = Data().data_2d_network[problem_name]
+        trainer = NetworkTrainer()
+        network = trainer.load_network()
+        _, solution = network(torch.tensor(data["items"]).float().unsqueeze(0))
+        print(solution)
+        packer = newPacker(sort_algo=None)
+        packer.add_bin(*data["bin_size"])
+        rectangles = [data["items"][i] for i in solution.squeeze()]
+        for rec in rectangles:
+            packer.add_rect(*map(int, rec))
+        packer.pack()
+        for rect in packer[0]:
+            print(rect)

@@ -1,33 +1,36 @@
-import random
-from collections import defaultdict
+from rectpack import newPacker
+from rectpack.maxrects import MaxRects
 
-original_list = [(4, 2), (1, 1), (3, 2), (2, 2), (1, 1)]
-# Shuffle the original list
-shuffled_list = original_list.copy()
-random.shuffle(shuffled_list)
-index_dict = defaultdict(list)
-shuffled_list_copy = shuffled_list.copy()
+import numpy as np
 
-# Create a dictionary to store indexes of items in the shuffled list
-for item in shuffled_list:
-    index_dict[item].append(shuffled_list_copy.index(item))
-    shuffled_list_copy[shuffled_list_copy.index(item)] = None
+rectangles = [(2,2),(1,2),(5,5)]
+bins = [(10, 10)]
 
-# Create a list of indexes for the shuffled list
-indexes = []
-for item in original_list:
-    indexes.append(index_dict[item][0])
-    index_dict[item].pop(0)
+packer = newPacker(sort_algo=None)
 
-sorted_list = [shuffled_list[i] for i in indexes]
+# Add the rectangles to packing queue
+for r in rectangles:
+	packer.add_rect(*map(int, r))
 
-# Compare the sorted list to the original list
-if sorted_list == original_list:
-    print("The shuffled list is the same as the original list.")
-else:
-    print("The shuffled list is different from the original list.")
+# Add the bins where the rectangles will be placed
+for b in bins:
+	packer.add_bin(*b)
 
-print("Original List:", original_list)
-print("Shuffled List:", shuffled_list)
-print("Sorted List:", sorted_list)
-print("Indexes:", indexes)
+# Start packing
+packer.pack()
+
+map = np.zeros((10, 10))
+
+# Draw the packed rectangles on the map
+for rect in packer[0]:
+	map[rect.corner_bot_l.x:rect.corner_top_r.x, rect.corner_bot_l.y:rect.corner_top_r.y] = 1
+
+max_height = map.nonzero()[0].max() + 1
+total_area = map.shape[0] * max_height
+ones_area = np.sum(map)
+packing_density = ones_area / total_area
+print("Packing density: ", packing_density)
+np.set_printoptions(threshold=np.inf)
+
+# Print the map as a NumPy array
+print(map)
