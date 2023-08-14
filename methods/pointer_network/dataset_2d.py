@@ -1,13 +1,12 @@
 import torch
 import glob
 
-from torch.utils.data import Dataset, TensorDataset
-import torch.nn.utils.rnn as rnn_utils
+from torch.utils.data import Dataset
 
 from utils.data_generator2d import DataGenerator
 
 
-class PackingDataset(Dataset):
+class PackingDataset2d(Dataset):
     def __init__(self):
         self.data = self._load_data_from_files()
         self.data += self._generate_data()

@@ -1,23 +1,20 @@
 import torch
-from torch.autograd import Variable
 from torch.utils.data import DataLoader, random_split
 from evotorch.neuroevolution import NEProblem
 from evotorch.logging import StdOutLogger, WandbLogger
-from ..GA.bottom_left_fill import BottomLeftPacker
-from evotorch.algorithms import PGPE, SNES
+from evotorch.algorithms import PGPE
 from tqdm import tqdm
 from rectpack import newPacker
 from rectpack.maxrects import MaxRects
 import numpy as np
 
-from utils.rectangle import Rectangle
 from .pointer_network import PointerNet
-from .dataset import PackingDataset
+from .dataset_2d import PackingDataset2d
 
 
-class NetworkTrainer:
+class NetworkTrainer_2d:
     def __init__(self) -> None:
-        self.dataset = PackingDataset()
+        self.dataset = PackingDataset2d()
         #self.train_dataloader, self.test_dataloader = self.train_test_split()
         self.network_config = {
             "embedding_dim": 32,
