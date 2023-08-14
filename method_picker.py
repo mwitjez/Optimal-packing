@@ -5,7 +5,7 @@ from evotorch.logging import WandbLogger, StdOutLogger
 from evotorch.algorithms import GeneticAlgorithm
 from rectpack import newPacker
 
-from visualization.visualization_2d import Plotter2d
+from visualization.visualization_2d import Plotter2d, NetwrokDataPlotter2d
 from visualization.visualization_3d import Plotter3d
 from methods.GA.bottom_left_fill import BottomLeftPacker
 from methods.GA.deepest_bottom_left_fill import DeepestBottomLeftPacker
@@ -26,15 +26,15 @@ class MethodPicker:
     @timing
     @staticmethod
     def run_2d(problem_name="C1"):
-        data = Data().data_2d[problem_name]
+        data = Data().data_2d_ga[problem_name]
         packer = BottomLeftPacker(
             data["items"], data["bin_size"][0], data["bin_size"][1] + 10
         )
         chromosome_length = data["num_items"]
-        population_size = 100
+        population_size = 128
         parents_number = 10
         mutation_rate = 0.8
-        num_generations = 200
+        num_generations = 20
         genetic_algorithm = CustomGeneticAlgorithm(
             parents_number, chromosome_length, mutation_rate, packer
         )
@@ -47,23 +47,23 @@ class MethodPicker:
     @timing
     @staticmethod
     def run_evotorch_2d(problem_name="C1"):
-        data = Data().data_2d[problem_name]
+        data = Data().data_2d_ga[problem_name]
         packer = BottomLeftPacker(
             data["items"], data["bin_size"][0], data["bin_size"][1] + 10
         )
         problem = PackingProblem(data["num_items"], packer)
         ga = GeneticAlgorithm(
             problem,
-            popsize=128,
+            popsize=200,
             operators=[
                 MultiParentOrderCrossOver(parents_per_child=4, problem=problem, tournament_size=16),
-                OrderBasedMutation(problem=problem, mutation_probability=0.05),
+                OrderBasedMutation(problem=problem, mutation_probability=0.8),
             ],
             elitist=False
         )
         WandbLogger(ga, project="optimal_packing")
         StdOutLogger(ga)
-        ga.run(100)
+        ga.run(20)
         print("Solution with best fitness ever:", ga.status["best"])
         best_chromosome = np.array(ga.status["best"]).tolist()
         solution = packer.pack_rectangles(best_chromosome)
@@ -154,5 +154,5 @@ class MethodPicker:
         for rec in rectangles:
             packer.add_rect(*map(int, rec))
         packer.pack()
-        for rect in packer[0]:
-            print(rect)
+        plotter = NetwrokDataPlotter2d(packer[0], data["bin_size"])
+        plotter.plot()

@@ -71,15 +71,15 @@ class NetworkTrainer:
         )
         searcher = PGPE(
             problem,
-            popsize=10,
+            popsize=50,
             radius_init=2.25,
             center_learning_rate=0.2,
             stdev_learning_rate=0.1,
             distributed=True,
         )
         StdOutLogger(searcher)
-        #WandbLogger(searcher, project="Neuroevolution packing")
-        searcher.run(10)
+        WandbLogger(searcher, project="Neuroevolution packing")
+        searcher.run(50)
         self.trained_network = problem.parameterize_net(searcher.status['center'])
 
     def save_network(self):

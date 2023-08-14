@@ -317,4 +317,4 @@ class PointerNet(nn.Module):
                                                            decoder_hidden0,
                                                            encoder_outputs)
 
-        return  outputs, pointers
+        return outputs, pointers
