@@ -15,7 +15,8 @@ from methods.GA.evotorch_problem import PackingProblem
 from methods.GA.evotorch_pmx import PartiallyMappedCrossOver
 from methods.GA.evotorch_mpox import MultiParentOrderCrossOver
 from methods.GA.evotorch_custom_mutation import OrderBasedMutation
-from methods.pointer_network.network_trainer import NetworkTrainer
+from methods.pointer_network.network_trainer_2d import NetworkTrainer_2d
+from methods.pointer_network.network_trainer_3d import NetworkTrainer_3d
 from data.data import Data
 from utils.time_wrapper import timing
 from utils.data_generator2d import DataGenerator
@@ -139,14 +140,19 @@ class MethodPicker:
     @timing
     @staticmethod
     def train_pointer_network_2d():
-        trainer = NetworkTrainer()
+        trainer = NetworkTrainer_2d()
+        trainer.train()
+        trainer.save_network()
+
+    def train_pointer_network_3d():
+        trainer = NetworkTrainer_3d()
         trainer.train()
         trainer.save_network()
 
     @staticmethod
     def run_pointer_network_2d(problem_name="C1"):
         data = Data().data_2d_network[problem_name]
-        trainer = NetworkTrainer()
+        trainer = NetworkTrainer_2d()
         network = trainer.load_network("trained_network_avid-energy-8.pt")
         network_input = torch.tensor(data["items"]).float().unsqueeze(0)
         network_input = torch.nn.functional.normalize(network_input, dim=1)

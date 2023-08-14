@@ -10,7 +10,7 @@ class PackingDataset3d(Dataset):
     def __init__(self):
         self.data = self._sample_data()
         #self.data += self._generate_data()
-        #self._normalize_data()
+        self._normalize_data()
 
     def __len__(self):
         return len(self.data)
@@ -23,13 +23,12 @@ class PackingDataset3d(Dataset):
         return scaled_cuboids, original_cuboids, bin_size
 
     def _normalize_data(self):
-        #TODO
         for i, (items, bin_size) in enumerate(self.data):
             max_item_size = max(max(item) for item in items)
             self.data[i] = (
-                [(item[0] / max_item_size, item[1] / max_item_size) for item in items],
+                [(item[0] / max_item_size, item[1] / max_item_size, item[2] / max_item_size) for item in items],
                 (items),
-                (bin_size[0], bin_size[1]),
+                (bin_size[0], bin_size[1], bin_size[2]),
             )
 
     def _sample_data(self):

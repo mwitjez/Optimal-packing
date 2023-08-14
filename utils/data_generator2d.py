@@ -1,6 +1,4 @@
 import random
-import torch
-from collections import defaultdict
 
 
 class DataGenerator:
