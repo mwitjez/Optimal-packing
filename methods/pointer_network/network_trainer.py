@@ -9,34 +9,59 @@ from tqdm import tqdm
 from rectpack import newPacker
 from rectpack.maxrects import MaxRects
 import numpy as np
-from torch.nn.utils.rnn import pack_padded_sequence
-from torch.nn.utils.rnn import pack_sequence, pad_packed_sequence
-
 
 from utils.rectangle import Rectangle
 from .pointer_network import PointerNet
 from .dataset import PackingDataset
 
+
 class NetworkTrainer:
     def __init__(self) -> None:
         self.dataset = PackingDataset()
-        self.train_dataloader, self.test_dataloader = self.train_test_split()
+        #self.train_dataloader, self.test_dataloader = self.train_test_split()
         self.network_config = {
-                "embedding_dim": 32,
-                "hidden_dim": 128,
-                "lstm_layers": 2,
-                "dropout": 0,
-            }
+            "embedding_dim": 32,
+            "hidden_dim": 128,
+            "lstm_layers": 2,
+            "dropout": 0,
+        }
+        self.wandb_config = {
+            **self.network_config,
+            "batch_size": 32,
+            "pop_size": 50,
+            "num_epochs": 25,
+            "dataset_size": len(self.dataset),
+            "used_train_test_split": False,
+            "added_generated_data": True
+        }
+        self.train_dataloader = DataLoader(
+            self.dataset,
+            batch_size=self.wandb_config["batch_size"],
+            shuffle=True,
+            collate_fn=self.custom_collate,
+        )
 
     def train_test_split(self, train_proportion: float = 0.8):
         train_size = int(train_proportion * len(self.dataset))
         test_size = len(self.dataset) - train_size
 
-        train_dataset, test_dataset = random_split(self.dataset, [train_size, test_size])
+        train_dataset, test_dataset = random_split(
+            self.dataset, [train_size, test_size]
+        )
 
-        batch_size = 32
-        train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, collate_fn=self.custom_collate)
-        test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, collate_fn=self.custom_collate)
+        batch_size = self.wandb_config["batch_size"]
+        train_loader = DataLoader(
+            train_dataset,
+            batch_size=batch_size,
+            shuffle=True,
+            collate_fn=self.custom_collate,
+        )
+        test_loader = DataLoader(
+            test_dataset,
+            batch_size=batch_size,
+            shuffle=False,
+            collate_fn=self.custom_collate,
+        )
         return train_loader, test_loader
 
     def custom_collate(self, batch):
@@ -65,7 +90,9 @@ class NetworkTrainer:
                 bin_sizes = sampled_batched[2]
                 _, batch_pointers = network(scaled_rectangles)
                 for i, pointers in enumerate(batch_pointers):
-                    score += self._evaluate_pointers(pointers, original_rectangles[i], bin_sizes[i])
+                    score += self._evaluate_pointers(
+                        pointers, original_rectangles[i], bin_sizes[i]
+                    )
         return score
 
     def _evaluate_pointers(self, pointers, rectangles, bin_size):
@@ -77,7 +104,10 @@ class NetworkTrainer:
         packer.pack()
         rec_map = np.zeros((bin_size[0], bin_size[1]))
         for rect in packer[0]:
-            rec_map[rect.corner_bot_l.x:rect.corner_top_r.x, rect.corner_bot_l.y:rect.corner_top_r.y] = 1
+            rec_map[
+                rect.corner_bot_l.x : rect.corner_top_r.x,
+                rect.corner_bot_l.y : rect.corner_top_r.y,
+            ] = 1
         max_height = rec_map.nonzero()[0].max() + 1
         total_area = rec_map.shape[0] * max_height
         ones_area = np.sum(rec_map)
@@ -94,22 +124,22 @@ class NetworkTrainer:
         )
         searcher = PGPE(
             problem,
-            popsize=50,
+            popsize=self.wandb_config["pop_size"],
             radius_init=2.25,
             center_learning_rate=0.2,
             stdev_learning_rate=0.1,
             distributed=True,
         )
         StdOutLogger(searcher)
-        #WandbLogger(searcher, project="Neuroevolution packing")
-        searcher.run(25)
-        self.trained_network = problem.parameterize_net(searcher.status['center'])
+        #WandbLogger(searcher, project="Neuroevolution packing", config=self.wandb_config)
+        searcher.run(self.wandb_config["num_epochs"])
+        self.trained_network = problem.parameterize_net(searcher.status["center"])
 
     def save_network(self):
         torch.save(self.trained_network.state_dict(), "trained_network.pt")
 
-    def load_network(self):
+    def load_network(self, file_name:str):
         self.trained_network = PointerNet(**self.network_config)
-        self.trained_network.load_state_dict(torch.load("trained_network.pt"))
+        self.trained_network.load_state_dict(torch.load(file_name))
         self.trained_network.eval()
         return self.trained_network
