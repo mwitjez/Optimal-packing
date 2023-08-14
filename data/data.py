@@ -9,6 +9,7 @@ from utils.singleton import Singleton
 
 
 class Data(metaclass=Singleton):
+    ADDITIONAL_HEIGHT = 10
     def __init__(self):
         self.data_2d_ga = self._load_2d_data_ga()
         self.data_3d_ga = self._load_3d_data_ga()
@@ -22,6 +23,7 @@ class Data(metaclass=Singleton):
                 filename = file.strip(".json")
                 with open(f"data/2D/{file}", 'r') as f:
                     data[filename] = json.load(f)
+                data[filename]["bin_size"][1] += self.ADDITIONAL_HEIGHT
                 data[filename]["items"] = self._create_rectangle_list(data[filename]["items"])
         return data
 
@@ -32,6 +34,7 @@ class Data(metaclass=Singleton):
                 filename = file.strip(".json")
                 with open(f"data/3D/{file}", 'r') as f:
                     data[filename] = json.load(f)
+                data[filename]["bin_size"][2] += self.ADDITIONAL_HEIGHT
                 data[filename]["items"] = self._create_cuboid_list(data[filename]["items"])
         return data
 
@@ -48,6 +51,6 @@ class Data(metaclass=Singleton):
                 filename = file.strip(".json")
                 with open(f"data/2D/{file}", 'r') as f:
                     file_data = json.load(f)
-                    data[filename]["bin_size"] = tuple(file_data["bin_size"])
+                    data[filename]["bin_size"] = (file_data["bin_size"][0], file_data["bin_size"][1]+self.ADDITIONAL_HEIGHT)
                     data[filename]["items"] = [(item["width"], item["height"]) for item in file_data["items"]]
         return data

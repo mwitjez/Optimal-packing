@@ -7,7 +7,11 @@ from ..GA.bottom_left_fill import BottomLeftPacker
 from evotorch.algorithms import PGPE, SNES
 from tqdm import tqdm
 from rectpack import newPacker
+from rectpack.maxrects import MaxRects
 import numpy as np
+from torch.nn.utils.rnn import pack_padded_sequence
+from torch.nn.utils.rnn import pack_sequence, pad_packed_sequence
+
 
 from utils.rectangle import Rectangle
 from .pointer_network import PointerNet
@@ -18,8 +22,8 @@ class NetworkTrainer:
         self.dataset = PackingDataset()
         self.train_dataloader, self.test_dataloader = self.train_test_split()
         self.network_config = {
-                "embedding_dim": 128,
-                "hidden_dim": 512,
+                "embedding_dim": 32,
+                "hidden_dim": 128,
                 "lstm_layers": 2,
                 "dropout": 0,
             }
@@ -30,36 +34,55 @@ class NetworkTrainer:
 
         train_dataset, test_dataset = random_split(self.dataset, [train_size, test_size])
 
-        batch_size = 1
-        train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-        test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+        batch_size = 32
+        train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, collate_fn=self.custom_collate)
+        test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, collate_fn=self.custom_collate)
         return train_loader, test_loader
+
+    def custom_collate(self, batch):
+        # Group samples by their sequence length
+        seq_lengths = [len(item[0]) for item in batch]
+        unique_lengths = list(set(seq_lengths))
+        batches = {length: [[], [], []] for length in unique_lengths}
+
+        for seq, original_seq, bin_size in batch:
+            seq_length = len(seq)
+            batches[seq_length][0].append(seq)
+            batches[seq_length][1].append(original_seq)
+            batches[seq_length][2].append(bin_size)
+        for seq_length in unique_lengths:
+            batches[seq_length][0] = torch.stack(batches[seq_length][0])
+        return batches
 
     @torch.no_grad()
     def eval_model(self, network: PointerNet):
         iterator = tqdm(self.train_dataloader, unit="Batch")
         score = 0
-        for i_batch, sample_batched in enumerate(iterator):
-            rectangles = sample_batched[0]
-            _, pointers = network(rectangles)
-            rectangles = rectangles.squeeze(0) #TODO batch
-            rectangles = [rectangles[i] for i in pointers]
-            bin_size = sample_batched[1].squeeze(0) #TODO batch
-            packer = newPacker(sort_algo=None)
-            packer.add_bin(*bin_size)
-            for rec in rectangles[0]: #TODO batch
-                packer.add_rect(*map(int, rec))
-            packer.pack()
-            rec_map = np.zeros((bin_size[0], bin_size[1]))
-            for rect in packer[0]: #TODO batch?
-                rec_map[rect.corner_bot_l.x:rect.corner_top_r.x, rect.corner_bot_l.y:rect.corner_top_r.y] = 1
-            max_height = rec_map.nonzero()[0].max() + 1
-            total_area = rec_map.shape[0] * max_height
-            ones_area = np.sum(rec_map)
-            packing_density = ones_area / total_area
-            if packing_density:
-                score += packing_density
+        for i_batch, batch in enumerate(iterator):
+            for sampled_batched in batch.values():
+                scaled_rectangles = sampled_batched[0]
+                original_rectangles = sampled_batched[1]
+                bin_sizes = sampled_batched[2]
+                _, batch_pointers = network(scaled_rectangles)
+                for i, pointers in enumerate(batch_pointers):
+                    score += self._evaluate_pointers(pointers, original_rectangles[i], bin_sizes[i])
         return score
+
+    def _evaluate_pointers(self, pointers, rectangles, bin_size):
+        rectangles = [rectangles[i] for i in pointers]
+        packer = newPacker(sort_algo=None, pack_algo=MaxRects)
+        packer.add_bin(*bin_size)
+        for rec in rectangles:
+            packer.add_rect(*map(int, rec))
+        packer.pack()
+        rec_map = np.zeros((bin_size[0], bin_size[1]))
+        for rect in packer[0]:
+            rec_map[rect.corner_bot_l.x:rect.corner_top_r.x, rect.corner_bot_l.y:rect.corner_top_r.y] = 1
+        max_height = rec_map.nonzero()[0].max() + 1
+        total_area = rec_map.shape[0] * max_height
+        ones_area = np.sum(rec_map)
+        packing_density = ones_area / total_area
+        return packing_density
 
     def train(self):
         problem = NEProblem(
@@ -78,8 +101,8 @@ class NetworkTrainer:
             distributed=True,
         )
         StdOutLogger(searcher)
-        WandbLogger(searcher, project="Neuroevolution packing")
-        searcher.run(50)
+        #WandbLogger(searcher, project="Neuroevolution packing")
+        searcher.run(25)
         self.trained_network = problem.parameterize_net(searcher.status['center'])
 
     def save_network(self):

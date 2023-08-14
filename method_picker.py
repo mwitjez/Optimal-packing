@@ -4,6 +4,7 @@ import torch
 from evotorch.logging import WandbLogger, StdOutLogger
 from evotorch.algorithms import GeneticAlgorithm
 from rectpack import newPacker
+from rectpack.maxrects import MaxRects
 
 from visualization.visualization_2d import Plotter2d, NetwrokDataPlotter2d
 from visualization.visualization_3d import Plotter3d
@@ -91,7 +92,7 @@ class MethodPicker:
             data["items"],
             data["bin_size"][0],
             data["bin_size"][1],
-            data["bin_size"][2] + 10,
+            data["bin_size"][2],
         )
         chromosome_length = data["num_items"]
         population_size = 100
@@ -116,7 +117,7 @@ class MethodPicker:
             data["items"],
             data["bin_size"][0],
             data["bin_size"][1],
-            data["bin_size"][2] + 10,
+            data["bin_size"][2],
         )
         problem = PackingProblem(data["num_items"], packer)
         ga = GeneticAlgorithm(
@@ -135,6 +136,7 @@ class MethodPicker:
         plotter = Plotter3d(solution)
         plotter.plot()
 
+    @timing
     @staticmethod
     def train_pointer_network_2d():
         trainer = NetworkTrainer()
@@ -148,7 +150,7 @@ class MethodPicker:
         network = trainer.load_network()
         _, solution = network(torch.tensor(data["items"]).float().unsqueeze(0))
         print(solution)
-        packer = newPacker(sort_algo=None)
+        packer = newPacker(sort_algo=None, pack_algo=MaxRects)
         packer.add_bin(*data["bin_size"])
         rectangles = [data["items"][i] for i in solution.squeeze()]
         for rec in rectangles:
