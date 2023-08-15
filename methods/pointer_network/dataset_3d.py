@@ -54,6 +54,5 @@ class PackingDataset3d(Dataset):
         return data
 
     def _generate_data(self):
-        #TODO
         d = DataGenerator(100, 50, 50)
         return d.generate()

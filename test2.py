@@ -35,7 +35,6 @@ class MaxRects3DPacker:
             if best_fit is not None:
                 x, y, z, width, height, depth = best_fit
                 self.packed_boxes.append(PackedBox(x, y, z, box))
-                
                 if box.width == width and box.height == height and box.depth == depth:
                     del self.free_space[best_fit_index]
                 else:

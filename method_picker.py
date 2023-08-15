@@ -20,7 +20,9 @@ from methods.pointer_network.network_trainer_3d import NetworkTrainer_3d
 from data.data import Data
 from utils.time_wrapper import timing
 from utils.data_generator2d import DataGenerator
+from utils.data_generator3d import DataGenerator
 from utils.rectangle import Rectangle
+from utils.cuboid import Cuboid
 
 
 class MethodPicker:
@@ -73,7 +75,7 @@ class MethodPicker:
         plotter.plot()
 
     @staticmethod
-    def test2d_data(problem_name="C1"):
+    def test2d_data():
         dg = DataGenerator(1, 20, 20)
         data = dg.generate()[0]
         rectangles = [Rectangle(rectangle[0], rectangle[1]) for rectangle in data[0]]
@@ -83,6 +85,19 @@ class MethodPicker:
         best_chromosome = data[1]
         solution = packer.pack_rectangles(best_chromosome)
         plotter = Plotter2d(solution)
+        plotter.plot()
+
+    @staticmethod
+    def test3d_data():
+        dg = DataGenerator(1, 10, 10, 10)
+        data = dg.generate()[0]
+        rectangles = [Cuboid(c[0], c[1], c[2]) for c in data[0]]
+        print(len(rectangles))
+        packer = DeepestBottomLeftPacker(
+            rectangles, data[1][0], data[1][1], data[1][2] + 10
+        )
+        solution = packer.pack_rectangles(list(range(len(rectangles))))
+        plotter = Plotter3d(solution)
         plotter.plot()
 
     @timing
@@ -153,7 +168,7 @@ class MethodPicker:
     def run_pointer_network_2d(problem_name="C1"):
         data = Data().data_2d_network[problem_name]
         trainer = NetworkTrainer_2d()
-        network = trainer.load_network("trained_network_avid-energy-8.pt")
+        network = trainer.load_network("trained_network_expert-oath-9.pt")
         network_input = torch.tensor(data["items"]).float().unsqueeze(0)
         network_input = torch.nn.functional.normalize(network_input, dim=1)
         _, solution = network(network_input)

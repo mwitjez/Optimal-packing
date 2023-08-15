@@ -6,7 +6,7 @@ class DataGenerator:
 
     def __init__(self, data_size, bin_max_x: int = 10, bin_max_y: int = 10):
         self.data_size = data_size
-        if bin_max_x < self.MIN_BIN_SIZE or self.MIN_BIN_SIZE < 10:
+        if bin_max_x < self.MIN_BIN_SIZE or bin_max_y < self.MIN_BIN_SIZE:
             raise ValueError("Bin size must be at least 10x10")
         self.bin_max_x = bin_max_x
         self.bin_max_y = bin_max_y
@@ -17,7 +17,7 @@ class DataGenerator:
             bin_x = random.randint(self.MIN_BIN_SIZE, self.bin_max_x)
             bin_y = random.randint(self.MIN_BIN_SIZE, self.bin_max_y)
             rectangles = []
-            y_cutting_points = sorted(random.sample(range(1, bin_y), bin_x // 3))
+            y_cutting_points = sorted(random.sample(range(1, bin_y), bin_y // 3))
             y_positions = [0, *y_cutting_points, bin_y]
             for y in range(len(y_positions) - 1):
                 x_cutting_points = sorted(

@@ -21,6 +21,7 @@ class NetworkTrainer_2d:
             "hidden_dim": 128,
             "lstm_layers": 2,
             "dropout": 0,
+            "problem_dimension": 2
         }
         self.wandb_config = {
             **self.network_config,
@@ -128,7 +129,7 @@ class NetworkTrainer_2d:
             distributed=True,
         )
         StdOutLogger(searcher)
-        #WandbLogger(searcher, project="Neuroevolution packing", config=self.wandb_config)
+        WandbLogger(searcher, project="Neuroevolution packing", config=self.wandb_config)
         searcher.run(self.wandb_config["num_epochs"])
         self.trained_network = problem.parameterize_net(searcher.status["center"])
 
