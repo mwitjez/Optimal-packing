@@ -15,6 +15,7 @@ class Data(metaclass=Singleton):
         self.data_2d_ga = self._load_2d_data_ga()
         self.data_3d_ga = self._load_3d_data_ga()
         self.data_2d_network = self._load_2d_data_network()
+        self.data_3d_network = self._load_3d_data_network()
 
     def _load_2d_data_ga(self):
         data = defaultdict(dict)

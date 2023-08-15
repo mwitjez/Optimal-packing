@@ -1,9 +1,6 @@
 import numpy as np
-import torch
-from dataclasses import dataclass
 
 
-@dataclass
 class Bin:
     """
     A class representing the rectangular container that the items will be packed into.

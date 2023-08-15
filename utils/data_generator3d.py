@@ -2,7 +2,8 @@ import random
 
 
 class DataGenerator:
-    MIN_BIN_SIZE = 10
+    MIN_BIN_SIZE = 5
+    ADDITIONAL_HEIGHT = 10
 
     def __init__(self, data_size, bin_max_x: int = 10, bin_max_y: int = 10, bin_max_z: int = 10):
         self.data_size = data_size
@@ -40,9 +41,5 @@ class DataGenerator:
                                 )
                             )
             random.shuffle(cuboids)
-            data.append((cuboids, (bin_x, bin_y, bin_z)))
+            data.append((cuboids, (bin_x, bin_y, bin_z+self.ADDITIONAL_HEIGHT)))
         return data
-
-
-d = DataGenerator(10, 10, 10, 10)
-d.generate()

@@ -1,5 +1,6 @@
 import torch
 import glob
+import json
 
 from torch.utils.data import Dataset
 
@@ -8,8 +9,7 @@ from utils.data_generator3d import DataGenerator
 
 class PackingDataset3d(Dataset):
     def __init__(self):
-        self.data = self._sample_data()
-        #self.data += self._generate_data()
+        self.data = self._generate_data()
         self._normalize_data()
 
     def __len__(self):
@@ -42,17 +42,23 @@ class PackingDataset3d(Dataset):
         ]
 
     def _load_data_from_files(self):
-        #TODO ale chyba git
-        file_paths = glob.glob("data/3D_network_data/*/*")
+        file_paths = glob.glob("data/3D_network_data/*")
         data = []
         for file_path in file_paths:
             with open(file_path) as file:
-                file_data = file.readlines()
-                bin_size = tuple(int(size) for size in file_data[1].split())
-                items = [tuple(map(int, line.split())) for line in file_data[2:]]
+                file_data = json.load(file)
+                bin_size = (
+                        file_data["bin_size"][0],
+                        file_data["bin_size"][1],
+                        file_data["bin_size"][2],
+                    )
+                items = [
+                        (item["depth"], item["width"], item["height"])
+                        for item in file_data["items"]
+                    ]
                 data.append((items, bin_size))
         return data
 
     def _generate_data(self):
-        d = DataGenerator(100, 50, 50)
+        d = DataGenerator(200, 10, 10, 10)
         return d.generate()

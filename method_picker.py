@@ -89,8 +89,11 @@ class MethodPicker:
 
     @staticmethod
     def test3d_data():
-        dg = DataGenerator(1, 10, 10, 10)
-        data = dg.generate()[0]
+        dg = DataGenerator(100, 10, 10, 10)
+        data = dg.generate()
+        for d in data:
+            print(len(d[0]))
+        data = data[0]
         rectangles = [Cuboid(c[0], c[1], c[2]) for c in data[0]]
         print(len(rectangles))
         packer = DeepestBottomLeftPacker(
@@ -159,6 +162,8 @@ class MethodPicker:
         trainer.train()
         trainer.save_network()
 
+    @timing
+    @staticmethod
     def train_pointer_network_3d():
         trainer = NetworkTrainer_3d()
         trainer.train()
@@ -180,4 +185,21 @@ class MethodPicker:
             packer.add_rect(*map(int, rec))
         packer.pack()
         plotter = NetwrokDataPlotter2d(packer[0], data["bin_size"])
+        plotter.plot()
+
+    @staticmethod
+    def run_pointer_network_3d(problem_name="P8"):
+        data = Data().data_3d_network[problem_name]
+        trainer = NetworkTrainer_3d()
+        network = trainer.load_network("trained_network3D.pt")
+        network_input = torch.tensor(data["items"]).float().unsqueeze(0)
+        network_input = torch.nn.functional.normalize(network_input, dim=1)
+        _, solution = network(network_input)
+        print(solution)
+        cuboids = [Cuboid(c[0], c[1], c[2]) for c in data["items"]]
+        packer = DeepestBottomLeftPacker(
+            cuboids, *data["bin_size"]
+        )
+        solution = packer.pack_rectangles(solution.squeeze())
+        plotter = Plotter3d(solution)
         plotter.plot()

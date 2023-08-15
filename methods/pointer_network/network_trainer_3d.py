@@ -4,12 +4,11 @@ from evotorch.neuroevolution import NEProblem
 from evotorch.logging import StdOutLogger, WandbLogger
 from evotorch.algorithms import PGPE
 from tqdm import tqdm
-from py3dbp import Packer, Bin, Item
-import numpy as np
+from methods.GA.deepest_bottom_left_fill import DeepestBottomLeftPacker
 
 from .pointer_network import PointerNet
 from .dataset_3d import PackingDataset3d
-
+from utils.cuboid import Cuboid
 
 class NetworkTrainer_3d:
     def __init__(self) -> None:
@@ -20,7 +19,7 @@ class NetworkTrainer_3d:
             "hidden_dim": 128,
             "lstm_layers": 2,
             "dropout": 0,
-            "problem_dimension": 2
+            "problem_dimension": 3
         }
         self.wandb_config = {
             **self.network_config,
@@ -29,7 +28,7 @@ class NetworkTrainer_3d:
             "num_epochs": 25,
             "dataset_size": len(self.dataset),
             "used_train_test_split": False,
-            "added_generated_data": True,
+            "only_generated_data": True,
         }
         self.train_dataloader = DataLoader(
             self.dataset,
@@ -92,27 +91,19 @@ class NetworkTrainer_3d:
                     )
         return score
 
-    def _evaluate_pointers(self, pointers, rectangles, bin_size):
-        rectangles = [rectangles[i] for i in pointers]
-        packer = Packer()
-        packer.add_bin(Bin("", *bin_size.tolist(), len(rectangles)))
-        for rec in rectangles:
-            packer.add_item(Item("", *rec.tolist(), 1))
-        packer.pack()
-        cuboid_map = np.zeros((bin_size[0], bin_size[1], bin_size[2]))
-        for cuboid in packer.items:
-            cuboid_map[
-                int(cuboid.position[0]) : int(cuboid.position[0]) + int(cuboid.width),
-                int(cuboid.position[1]) : int(cuboid.position[1]) + int(cuboid.depth),
-                int(cuboid.position[2]) : int(cuboid.position[2]) + int(cuboid.height),
-            ] = 1
-        max_width = cuboid_map.nonzero()[0].max() + 1
-        max_depth = cuboid_map.nonzero()[1].max() + 1
-        max_height = cuboid_map.nonzero()[2].max() + 1
-        total_area = max_height * max_width * max_depth
-        ones_area = np.sum(cuboid_map)
-        packing_density = ones_area / total_area
+    def _evaluate_pointers(self, pointers, cuboids, bin_size):
+        if not self._is_full_list(pointers, len(cuboids)):
+            return 0
+        cuboids = [[int(x) for x in cuboid] for cuboid in cuboids.tolist()]
+        cuboids = [Cuboid(*cuboids[i]) for i in pointers]
+        packer = DeepestBottomLeftPacker(cuboids, *bin_size)
+        packing_density = packer.get_packing_density(pointers)
+        if packing_density == None:
+            return 0
         return packing_density
+
+    def _is_full_list(self, lst, n):
+        return all(i in lst for i in range(n))
 
     def train(self):
         problem = NEProblem(
@@ -120,7 +111,7 @@ class NetworkTrainer_3d:
             network=PointerNet,
             network_args=self.network_config,
             network_eval_func=self.eval_model,
-            num_actors=1,
+            num_actors="max",
         )
         searcher = PGPE(
             problem,
@@ -128,15 +119,15 @@ class NetworkTrainer_3d:
             radius_init=2.25,
             center_learning_rate=0.2,
             stdev_learning_rate=0.1,
-            distributed=False,
+            distributed=True,
         )
         StdOutLogger(searcher)
-        #WandbLogger(searcher, project="Neuroevolution packing", config=self.wandb_config)
+        WandbLogger(searcher, project="3D Neuroevolution packing", config=self.wandb_config)
         searcher.run(self.wandb_config["num_epochs"])
         self.trained_network = problem.parameterize_net(searcher.status["center"])
 
     def save_network(self):
-        torch.save(self.trained_network.state_dict(), "trained_network.pt")
+        torch.save(self.trained_network.state_dict(), "trained_network3D.pt")
 
     def load_network(self, file_name: str):
         self.trained_network = PointerNet(**self.network_config)
