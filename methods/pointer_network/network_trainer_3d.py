@@ -16,19 +16,23 @@ class NetworkTrainer_3d:
         # self.train_dataloader, self.test_dataloader = self.train_test_split()
         self.network_config = {
             "embedding_dim": 32,
-            "hidden_dim": 128,
+            "hidden_dim": 64,
             "lstm_layers": 2,
             "dropout": 0,
             "problem_dimension": 3
         }
         self.wandb_config = {
             **self.network_config,
-            "batch_size": 32,
-            "pop_size": 50,
+            "batch_size": 128,
+            "pop_size": 64,
             "num_epochs": 25,
             "dataset_size": len(self.dataset),
             "used_train_test_split": False,
             "only_generated_data": True,
+            "center_learning_rate": 0.01,
+            "stdev_learning_rate": 0.1,
+            "radius_init": 4.5,
+            "max_speed": 4.5 / 15.
         }
         self.train_dataloader = DataLoader(
             self.dataset,
@@ -89,20 +93,21 @@ class NetworkTrainer_3d:
                     score += self._evaluate_pointers(
                         pointers, original_rectangles[i], bin_sizes[i]
                     )
-        return score
+        return score/len(self.dataset)
 
     def _evaluate_pointers(self, pointers, cuboids, bin_size):
-        if not self._is_full_list(pointers, len(cuboids)):
+        if not self._is_full_sequence(pointers, len(cuboids)):
             return 0
         cuboids = [[int(x) for x in cuboid] for cuboid in cuboids.tolist()]
         cuboids = [Cuboid(*cuboids[i]) for i in pointers]
         packer = DeepestBottomLeftPacker(cuboids, *bin_size)
-        packing_density = packer.get_packing_density(pointers)
-        if packing_density == None:
+        packing_density, max_height = packer.get_packing_density(pointers)
+        if max_height is None or packing_density is None:
             return 0
-        return packing_density
+        score = (bin_size[2]/max_height) + packing_density
+        return score
 
-    def _is_full_list(self, lst, n):
+    def _is_full_sequence(self, lst, n):
         return all(i in lst for i in range(n))
 
     def train(self):
@@ -116,15 +121,19 @@ class NetworkTrainer_3d:
         searcher = PGPE(
             problem,
             popsize=self.wandb_config["pop_size"],
-            radius_init=2.25,
-            center_learning_rate=0.2,
-            stdev_learning_rate=0.1,
-            distributed=True,
+            radius_init=self.wandb_config["radius_init"],
+            center_learning_rate=self.wandb_config["center_learning_rate"],
+            stdev_learning_rate=self.wandb_config["stdev_learning_rate"],
+            optimizer_config = {
+                'max_speed': self.wandb_config["max_speed"],
+                'momentum': 0.9,
+            },
+            distributed=False,
         )
         StdOutLogger(searcher)
-        WandbLogger(searcher, project="3D Neuroevolution packing", config=self.wandb_config)
+        WandbLogger(searcher, project="3D Neuroevolution packing v3", config=self.wandb_config)
         searcher.run(self.wandb_config["num_epochs"])
-        self.trained_network = problem.parameterize_net(searcher.status["center"])
+        self.trained_network = problem.parameterize_net(searcher.status["best"].values)
 
     def save_network(self):
         torch.save(self.trained_network.state_dict(), "trained_network3D.pt")

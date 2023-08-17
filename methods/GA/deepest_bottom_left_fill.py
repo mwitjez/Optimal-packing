@@ -27,7 +27,7 @@ class DeepestBottomLeftPacker(BasePacker):
         """Calculates the packing density of a bin."""
         packed_bin = self.pack_rectangles(packing_order)
         if packed_bin is None:
-            return None
+            return None, None
         max_width = packed_bin.map.nonzero()[0].max() + 1
         max_depth = packed_bin.map.nonzero()[1].max() + 1
         max_height = packed_bin.map.nonzero()[2].max() + 1
@@ -35,7 +35,7 @@ class DeepestBottomLeftPacker(BasePacker):
         ones_area = np.sum(packed_bin.map)
         packing_density = ones_area / total_area
 
-        return packing_density
+        return packing_density, max_height
 
     def pack_rectangles(self, packing_order: list):
         """Packs the rectangles in the given order using the deepest-bottom-left algorithm."""

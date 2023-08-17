@@ -9,7 +9,7 @@ from utils.singleton import Singleton
 
 
 class Data(metaclass=Singleton):
-    ADDITIONAL_HEIGHT = 10
+    ADDITIONAL_HEIGHT = 20
 
     def __init__(self):
         self.data_2d_ga = self._load_2d_data_ga()

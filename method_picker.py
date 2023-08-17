@@ -106,7 +106,7 @@ class MethodPicker:
     @timing
     @staticmethod
     def run_3d(problem_name="P8"):
-        data = Data().data_3d[problem_name]
+        data = Data().data_3d_ga[problem_name]
         packer = DeepestBottomLeftPacker(
             data["items"],
             data["bin_size"][0],
@@ -117,7 +117,7 @@ class MethodPicker:
         population_size = 100
         parents_number = 30
         mutation_rate = 0.4
-        num_generations = 50
+        num_generations = 2
         genetic_algorithm = CustomGeneticAlgorithm(
             parents_number, chromosome_length, mutation_rate, packer
         )
