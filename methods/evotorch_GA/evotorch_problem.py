@@ -3,7 +3,7 @@ import torch
 from evotorch.tools import ObjectArray
 from evotorch import Problem, SolutionBatch
 
-from utils.base_packer import BasePacker
+from packers.base_packer import BasePacker
 
 
 class PackingProblem(Problem):

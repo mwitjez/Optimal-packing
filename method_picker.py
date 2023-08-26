@@ -8,13 +8,13 @@ from rectpack.maxrects import MaxRects
 
 from visualization.visualization_2d import Plotter2d, NetwrokDataPlotter2d
 from visualization.visualization_3d import Plotter3d
-from methods.GA.bottom_left_fill import BottomLeftPacker
-from methods.GA.deepest_bottom_left_fill import DeepestBottomLeftPacker
+from packers.bottom_left_fill import BottomLeftPacker
+from packers.deepest_bottom_left_fill import DeepestBottomLeftPacker
 from methods.GA.genetic_algorithm import CustomGeneticAlgorithm
-from methods.GA.evotorch_problem import PackingProblem
-from methods.GA.evotorch_pmx import PartiallyMappedCrossOver
-from methods.GA.evotorch_mpox import MultiParentOrderCrossOver
-from methods.GA.evotorch_custom_mutation import OrderBasedMutation
+from methods.evotorch_GA.evotorch_problem import PackingProblem
+from methods.evotorch_GA.evotorch_pmx import PartiallyMappedCrossOver
+from methods.evotorch_GA.evotorch_mpox import MultiParentOrderCrossOver
+from methods.evotorch_GA.evotorch_custom_mutation import OrderBasedMutation
 from methods.pointer_network.network_trainer_2d import NetworkTrainer_2d
 from methods.pointer_network.network_trainer_3d import NetworkTrainer_3d
 from data.data import Data
@@ -36,7 +36,7 @@ class MethodPicker:
         )
         chromosome_length = data["num_items"]
         population_size = 128
-        parents_number = 10
+        parents_number = 32
         mutation_rate = 0.8
         num_generations = 20
         genetic_algorithm = CustomGeneticAlgorithm(
@@ -46,7 +46,6 @@ class MethodPicker:
         solution = packer.pack_rectangles(best_chromosome)
         plotter = Plotter2d(solution)
         plotter.plot()
-        genetic_algorithm.plot_stats()
 
     @timing
     @staticmethod

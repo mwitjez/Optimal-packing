@@ -2,7 +2,7 @@ import torch
 from torch.utils.data import DataLoader, random_split
 from evotorch.neuroevolution import NEProblem
 from evotorch.logging import StdOutLogger, WandbLogger
-from evotorch.algorithms import PGPE
+from evotorch.algorithms import PGPE, Cosyne
 from tqdm import tqdm
 from rectpack import newPacker
 from rectpack.maxrects import MaxRects
@@ -126,7 +126,7 @@ class NetworkTrainer_2d:
             radius_init=2.25,
             center_learning_rate=0.2,
             stdev_learning_rate=0.1,
-            distributed=True,
+            distributed=False,
         )
         StdOutLogger(searcher)
         WandbLogger(searcher, project="Neuroevolution packing", config=self.wandb_config)

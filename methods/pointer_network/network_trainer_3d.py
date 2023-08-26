@@ -4,7 +4,7 @@ from evotorch.neuroevolution import NEProblem
 from evotorch.logging import StdOutLogger, WandbLogger
 from evotorch.algorithms import PGPE
 from tqdm import tqdm
-from methods.GA.deepest_bottom_left_fill import DeepestBottomLeftPacker
+from packers.deepest_bottom_left_fill import DeepestBottomLeftPacker
 
 from .pointer_network import PointerNet
 from .dataset_3d import PackingDataset3d

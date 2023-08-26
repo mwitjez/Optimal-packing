@@ -2,8 +2,8 @@ import numpy as np
 
 from matplotlib import pyplot as plt
 
-from methods.GA.bottom_left_fill import BottomLeftPacker
-from methods.GA.deepest_bottom_left_fill import DeepestBottomLeftPacker
+from packers.bottom_left_fill import BottomLeftPacker
+from packers.deepest_bottom_left_fill import DeepestBottomLeftPacker
 from methods.GA.genetic_algorithm import CustomGeneticAlgorithm
 from data.data import Data
 

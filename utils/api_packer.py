@@ -2,7 +2,7 @@ import torch
 import json
 
 from methods.pointer_network.network_trainer_3d import NetworkTrainer_3d
-from methods.GA.deepest_bottom_left_fill import DeepestBottomLeftPacker
+from packers.deepest_bottom_left_fill import DeepestBottomLeftPacker
 from utils.cuboid import Cuboid
 
 
