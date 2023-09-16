@@ -15,7 +15,7 @@ class Bin3D:
         self.width = width
         self.height = height
         self.depth = depth
-        self.items = items
+        self.items = []
         self.map = np.zeros((self.height, self.width, self.depth))
 
     def save_to_json(self):

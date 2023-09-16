@@ -21,11 +21,11 @@ class PackingProblem(Problem):
         for i in range(n):
             sln_values = solutions[i].values
             max_height = self.packer.get_max_height(sln_values)
-            packing_density = self.packer.get_packing_density(sln_values)
+            packing_density, _ = self.packer.get_packing_density(sln_values)
             if max_height is None or packing_density is None:
                 fitness = 0
             else:
-                fitness = 1000 / (max_height) ** 3 + packing_density
+                fitness = self.solution_length*100 / (max_height) ** 3 + packing_density
             fitnesses[i] = fitness
 
         solutions.set_evals(fitnesses)

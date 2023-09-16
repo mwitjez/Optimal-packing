@@ -1,10 +1,11 @@
 import numpy as np
 import torch
+import random
 
 from evotorch.logging import WandbLogger, StdOutLogger
 from evotorch.algorithms import GeneticAlgorithm
 from rectpack import newPacker
-from rectpack.maxrects import MaxRects
+from rectpack.maxrects import MaxRectsBl
 
 from visualization.visualization_2d import Plotter2d, NetwrokDataPlotter2d
 from visualization.visualization_3d import Plotter3d
@@ -29,37 +30,65 @@ class MethodPicker:
 
     @timing
     @staticmethod
+    def run_solo_blf(problem_name="C1"):
+        data = Data().data_2d_ga[problem_name]
+        packer = BottomLeftPacker(
+            data["items"], data["bin_size"][0], data["bin_size"][1]
+        )
+        seq = list(range(len(data["items"])))
+        random.shuffle(seq)
+        packing_density = packer.get_packing_density(seq)
+        print(f"Packing density: {packing_density}")
+
+    @timing
+    @staticmethod
+    def run_solo_dblf(problem_name="P8"):
+        data = Data().data_3d_ga[problem_name]
+        packer = DeepestBottomLeftPacker(
+            data["items"],
+            data["bin_size"][0],
+            data["bin_size"][1],
+            data["bin_size"][2],
+        )
+        seq = list(range(len(data["items"])))
+        random.shuffle(seq)
+        packing_density = packer.get_packing_density(seq)
+        print(f"Packing density: {packing_density}")
+
+    @timing
+    @staticmethod
     def run_2d(problem_name="C1"):
         data = Data().data_2d_ga[problem_name]
         packer = BottomLeftPacker(
-            data["items"], data["bin_size"][0], data["bin_size"][1] + 10
-        )
+            data["items"], data["bin_size"][0], data["bin_size"][1])
         chromosome_length = data["num_items"]
         population_size = 128
-        parents_number = 32
-        mutation_rate = 0.8
+        parents_number = 16
+        mutation_rate = 0.4
         num_generations = 20
         genetic_algorithm = CustomGeneticAlgorithm(
             parents_number, chromosome_length, mutation_rate, packer
         )
         best_chromosome = genetic_algorithm.run(num_generations, population_size)
-        solution = packer.pack_rectangles(best_chromosome)
-        plotter = Plotter2d(solution)
-        plotter.plot()
+        #solution = packer.pack_rectangles(best_chromosome)
+        packing_density = packer.get_packing_density(best_chromosome)
+        print(f"Packing density: {packing_density}")
+        #plotter = Plotter2d(solution)
+        #plotter.plot()
 
     @timing
     @staticmethod
     def run_evotorch_2d(problem_name="C1"):
         data = Data().data_2d_ga[problem_name]
         packer = BottomLeftPacker(
-            data["items"], data["bin_size"][0], data["bin_size"][1] + 10
+            data["items"], data["bin_size"][0], data["bin_size"][1]
         )
         problem = PackingProblem(data["num_items"], packer)
         ga = GeneticAlgorithm(
             problem,
-            popsize=200,
+            popsize=64,
             operators=[
-                MultiParentOrderCrossOver(parents_per_child=4, problem=problem, tournament_size=16),
+                MultiParentOrderCrossOver(parents_per_child=4, problem=problem, tournament_size=10),
                 OrderBasedMutation(problem=problem, mutation_probability=0.8),
             ],
             elitist=False
@@ -69,9 +98,11 @@ class MethodPicker:
         ga.run(20)
         print("Solution with best fitness ever:", ga.status["best"])
         best_chromosome = np.array(ga.status["best"]).tolist()
-        solution = packer.pack_rectangles(best_chromosome)
-        plotter = Plotter2d(solution)
-        plotter.plot()
+        packing_density = packer.get_packing_density(best_chromosome)
+        print(f"Packing density: {packing_density}")
+        #solution = packer.pack_rectangles(best_chromosome)
+        #plotter = Plotter2d(solution)
+        #plotter.plot()
 
     @staticmethod
     def test2d_data():
@@ -113,24 +144,24 @@ class MethodPicker:
             data["bin_size"][2],
         )
         chromosome_length = data["num_items"]
-        population_size = 100
-        parents_number = 30
+        population_size = 64
+        parents_number = 8
         mutation_rate = 0.4
-        num_generations = 2
+        num_generations = 20
         genetic_algorithm = CustomGeneticAlgorithm(
             parents_number, chromosome_length, mutation_rate, packer
         )
         best_chromosome = genetic_algorithm.run(num_generations, population_size)
-        solution = packer.pack_rectangles(best_chromosome)
-        #solution.save_to_json()
-        plotter = Plotter3d(solution)
-        plotter.plot()
-        genetic_algorithm.plot_stats()
+        packing_density = packer.get_packing_density(best_chromosome)
+        print(f"Packing density: {packing_density}")
+        #solution = packer.pack_rectangles(best_chromosome)
+        #plotter = Plotter3d(solution)
+        #plotter.plot()
 
     @timing
     @staticmethod
     def run_evotorch_3d(problem_name="P8"):
-        data = Data().data_3d[problem_name]
+        data = Data().data_3d_ga[problem_name]
         packer = DeepestBottomLeftPacker(
             data["items"],
             data["bin_size"][0],
@@ -140,19 +171,22 @@ class MethodPicker:
         problem = PackingProblem(data["num_items"], packer)
         ga = GeneticAlgorithm(
             problem,
-            popsize=100,
+            popsize=32,
             operators=[
-                MultiParentOrderCrossOver(parents_per_child=4, problem=problem, tournament_size=10),
+                MultiParentOrderCrossOver(parents_per_child=4, problem=problem, tournament_size=8),
+                OrderBasedMutation(problem=problem, mutation_probability=0.2),
             ],
         )
         WandbLogger(ga, project="optimal_packing")
         StdOutLogger(ga)
-        ga.run(50)
+        ga.run(20)
         print("Solution with best fitness ever:", ga.status["best"])
         best_chromosome = np.array(ga.status["best"]).tolist()
-        solution = packer.pack_rectangles(best_chromosome)
-        plotter = Plotter3d(solution)
-        plotter.plot()
+        packing_density = packer.get_packing_density(best_chromosome)
+        print(f"Packing density: {packing_density}")
+        #solution = packer.pack_rectangles(best_chromosome)
+        #plotter = Plotter3d(solution)
+        #plotter.plot()
 
     @timing
     @staticmethod
@@ -168,6 +202,7 @@ class MethodPicker:
         trainer.train()
         trainer.save_network()
 
+    @timing
     @staticmethod
     def run_pointer_network_2d(problem_name="C1"):
         data = Data().data_2d_network[problem_name]
@@ -177,15 +212,27 @@ class MethodPicker:
         network_input = torch.nn.functional.normalize(network_input, dim=1)
         _, solution = network(network_input)
         print(solution)
-        packer = newPacker(sort_algo=None, pack_algo=MaxRects)
+        packer = newPacker(sort_algo=None, pack_algo=MaxRectsBl)
         packer.add_bin(*data["bin_size"])
         rectangles = [data["items"][i] for i in solution.squeeze()]
         for rec in rectangles:
             packer.add_rect(*map(int, rec))
         packer.pack()
+        rec_map = np.zeros((data["bin_size"][0], data["bin_size"][1]))
+        for rect in packer[0]:
+            rec_map[
+                rect.corner_bot_l.x : rect.corner_top_r.x,
+                rect.corner_bot_l.y : rect.corner_top_r.y,
+            ] = 1
+        max_height = rec_map.nonzero()[0].max() + 1
+        total_area = rec_map.shape[0] * max_height
+        ones_area = np.sum(rec_map)
+        packing_density = ones_area / total_area
+        print(f"Packing density: {packing_density}")
         plotter = NetwrokDataPlotter2d(packer[0], data["bin_size"])
         plotter.plot()
 
+    @timing
     @staticmethod
     def run_pointer_network_3d(problem_name="P8"):
         data = Data().data_3d_network[problem_name]
@@ -199,6 +246,8 @@ class MethodPicker:
         packer = DeepestBottomLeftPacker(
             cuboids, *data["bin_size"]
         )
-        solution = packer.pack_rectangles(solution.squeeze())
-        plotter = Plotter3d(solution)
-        plotter.plot()
+        packing_density = packer.get_packing_density(solution.squeeze())
+        print(f"Packing density: {packing_density}")
+        # solution = packer.pack_rectangles(solution.squeeze())
+        # plotter = Plotter3d(solution)
+        # plotter.plot()

@@ -22,7 +22,7 @@ class ApiPacker():
     def pack_cuboids(self):
         bin_size = (10, 10, 20)
         trainer = NetworkTrainer_3d()
-        network = trainer.load_network("trained_network3D.pt")
+        network = trainer.load_network("trained_network3D-ok.pt")
         network_input = torch.tensor(self.cuboids).float().unsqueeze(0)
         network_input = torch.nn.functional.normalize(network_input, dim=1)
         _, solution = network(network_input)

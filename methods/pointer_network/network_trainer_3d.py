@@ -24,8 +24,8 @@ class NetworkTrainer_3d:
         self.wandb_config = {
             **self.network_config,
             "batch_size": 128,
-            "pop_size": 64,
-            "num_epochs": 25,
+            "pop_size": 32,
+            "num_epochs": 10,
             "dataset_size": len(self.dataset),
             "used_train_test_split": False,
             "only_generated_data": True,

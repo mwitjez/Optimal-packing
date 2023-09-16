@@ -106,7 +106,7 @@ class NetworkTrainer_2d:
                 rect.corner_bot_l.x : rect.corner_top_r.x,
                 rect.corner_bot_l.y : rect.corner_top_r.y,
             ] = 1
-        max_height = rec_map.nonzero()[0].max() + 1
+        max_height = rec_map.nonzero()[1].max() + 1
         total_area = rec_map.shape[0] * max_height
         ones_area = np.sum(rec_map)
         packing_density = ones_area / total_area

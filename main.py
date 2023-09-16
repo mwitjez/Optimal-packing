@@ -1,4 +1,5 @@
 from method_picker import MethodPicker
 
 if __name__ == "__main__":
-    MethodPicker.run_2d()
+    #MethodPicker.train_pointer_network_3d()
+    MethodPicker.run_solo_dblf("P27")

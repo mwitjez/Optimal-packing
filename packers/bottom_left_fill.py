@@ -17,7 +17,7 @@ class BottomLeftPacker(BasePacker):
         """Returns the maximum height of the bin after packing the rectangles in the given order."""
         packed_bin = self.pack_rectangles(packing_order)
         if packed_bin is None:
-            return None
+            return None, None
         max_height = packed_bin.map.nonzero()[0].max() + 1
         return max_height
 
@@ -25,13 +25,13 @@ class BottomLeftPacker(BasePacker):
         """Calculates the packing density of a bin."""
         packed_bin = self.pack_rectangles(packing_order)
         if packed_bin is None:
-            return None
+            return None, None
         max_height = packed_bin.map.nonzero()[0].max() + 1
-        total_area = packed_bin.map.shape[0] * max_height
+        total_area = packed_bin.map.shape[1] * max_height
         ones_area = np.sum(packed_bin.map)
         packing_density = ones_area / total_area
 
-        return packing_density
+        return packing_density, max_height
 
     def pack_rectangles(self, packing_order: list):
         """Packs the rectangles in the given order."""

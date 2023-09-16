@@ -31,7 +31,7 @@ async def pack_cubes(request_data: RequestBody):
         raise HTTPException(status_code=400, detail="No cuboids provided")
     api_packer = ApiPacker(cuboids)
     result = api_packer.pack_cuboids()
-    if result is  None:
+    if result is None:
         raise HTTPException(status_code=500, detail="Can't pack the cuboids")
     return result
 
