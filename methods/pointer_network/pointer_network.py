@@ -263,7 +263,8 @@ class PointerNet(nn.Module):
                  hidden_dim,
                  lstm_layers,
                  dropout,
-                 bidir=False):
+                 bidir=False,
+                 problem_dimension=2):
         """
         Initiate Pointer-Net
 
@@ -277,7 +278,7 @@ class PointerNet(nn.Module):
         super(PointerNet, self).__init__()
         self.embedding_dim = embedding_dim
         self.bidir = bidir
-        self.embedding = nn.Linear(2, embedding_dim)
+        self.embedding = nn.Linear(problem_dimension, embedding_dim)
         self.encoder = Encoder(embedding_dim,
                                hidden_dim,
                                lstm_layers,
@@ -317,4 +318,4 @@ class PointerNet(nn.Module):
                                                            decoder_hidden0,
                                                            encoder_outputs)
 
-        return  outputs, pointers
+        return outputs, pointers

@@ -1,6 +1,7 @@
 import random
 import math
 import matplotlib.pyplot as plt
+import wandb
 
 from tqdm import tqdm
 
@@ -12,18 +13,22 @@ class CustomGeneticAlgorithm:
         self.chromosome_length = chromosome_length
         self.mutation_rate = mutation_rate
         self.packer = packer
-        self._offspring_factor = 0.5
-        self.best_fitness = []
-        self.max_heights = []
+        self._offspring_factor = 0.6
+        self._setup_wandb()
 
     def run(self, num_generations, population_size):
         """Function that implements a genetic algorithm."""
         population = self._generate_population(population_size)
         for _ in tqdm(range(num_generations)):
             fitness_values = [self._calculate_fitness(chromosome) for chromosome in population]
-            self.best_fitness.append(max(fitness_values))
-            best_chromosome = population[fitness_values.index(self.best_fitness[-1])]
-            self.max_heights.append(self.packer.get_max_height(best_chromosome))
+            best_fitness = max(fitness_values)
+            best_chromosome = population[fitness_values.index(best_fitness)]
+            wandb.log({
+                "max_height": self.packer.get_max_height(best_chromosome),
+                "best_fitness": best_fitness,
+                "avg_fitness": sum(fitness_values) / len(fitness_values),
+                "packing_density": self.packer.get_packing_density(best_chromosome),
+            })
             parents = self._select_parents(population, fitness_values)
             offspring = self._crossover(parents, int(self._offspring_factor * population_size))
             newcomers = self._generate_population(population_size - len(offspring) - len(parents) - 1)
@@ -43,11 +48,11 @@ class CustomGeneticAlgorithm:
     def _calculate_fitness(self, chromosome):
         """Calculates the fitness value of a chromosome."""
         max_height = self.packer.get_max_height(chromosome)
-        packing_density = self.packer.get_packing_density(chromosome)
+        packing_density, _ = self.packer.get_packing_density(chromosome)
         if max_height is None or packing_density is None:
             fitness = 0
         else:
-            fitness = 1000/(max_height)**3 + packing_density
+            fitness = len(chromosome)*100/(max_height)**3 + packing_density
         return fitness
 
     def _select_parents(self, population, fitness_values):
@@ -125,3 +130,15 @@ class CustomGeneticAlgorithm:
         axs[1].legend()
         plt.xlabel("Generation")
         plt.show()
+
+    def _setup_wandb(self):
+        """Sets up wandb for logging."""
+        wandb.login()
+        wandb.init(
+            project="3D GA",
+            config={
+                "parents_number": self.parents_number,
+                "chromosome_length": self.chromosome_length,
+                "mutation_rate": self.mutation_rate,
+                "offspring_factor": self._offspring_factor,
+            })

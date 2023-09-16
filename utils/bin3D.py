@@ -1,9 +1,7 @@
 import json
 import numpy as np
-from dataclasses import dataclass
 
 
-@dataclass
 class Bin3D:
     """
     A class representing the rectangular container that the items will be packed into.
@@ -13,7 +11,7 @@ class Bin3D:
     depth: int
     items: list
 
-    def __init__(self, width: int, height: int, depth: int):
+    def __init__(self, width: int, height: int, depth: int, items: list = []):
         self.width = width
         self.height = height
         self.depth = depth
