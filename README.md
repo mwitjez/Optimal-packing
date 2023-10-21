@@ -58,3 +58,8 @@ Sample Request Body:
 ```
 ## Authors
 - [@Mateusz Witka-Jeżewski](https://www.github.com/mwitjez)
+
+## References
+- Scalable Evolutionary Computation in Python (https://github.com/nnaisense/evotorch)
+- rectpack (https://github.com/secnot/rectpack)
+- Pointer Network (https://github.com/shirgur/pointernet)

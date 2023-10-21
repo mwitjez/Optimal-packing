@@ -70,11 +70,11 @@ class MethodPicker:
             parents_number, chromosome_length, mutation_rate, packer
         )
         best_chromosome = genetic_algorithm.run(num_generations, population_size)
-        #solution = packer.pack_rectangles(best_chromosome)
+        solution = packer.pack_rectangles(best_chromosome)
         packing_density = packer.get_packing_density(best_chromosome)
         print(f"Packing density: {packing_density}")
-        #plotter = Plotter2d(solution)
-        #plotter.plot()
+        plotter = Plotter2d(solution)
+        plotter.plot()
 
     @timing
     @staticmethod
@@ -100,9 +100,9 @@ class MethodPicker:
         best_chromosome = np.array(ga.status["best"]).tolist()
         packing_density = packer.get_packing_density(best_chromosome)
         print(f"Packing density: {packing_density}")
-        #solution = packer.pack_rectangles(best_chromosome)
-        #plotter = Plotter2d(solution)
-        #plotter.plot()
+        solution = packer.pack_rectangles(best_chromosome)
+        plotter = Plotter2d(solution)
+        plotter.plot()
 
     @staticmethod
     def test2d_data():
@@ -154,9 +154,9 @@ class MethodPicker:
         best_chromosome = genetic_algorithm.run(num_generations, population_size)
         packing_density = packer.get_packing_density(best_chromosome)
         print(f"Packing density: {packing_density}")
-        #solution = packer.pack_rectangles(best_chromosome)
-        #plotter = Plotter3d(solution)
-        #plotter.plot()
+        solution = packer.pack_rectangles(best_chromosome)
+        plotter = Plotter3d(solution)
+        plotter.plot()
 
     @timing
     @staticmethod
@@ -184,9 +184,9 @@ class MethodPicker:
         best_chromosome = np.array(ga.status["best"]).tolist()
         packing_density = packer.get_packing_density(best_chromosome)
         print(f"Packing density: {packing_density}")
-        #solution = packer.pack_rectangles(best_chromosome)
-        #plotter = Plotter3d(solution)
-        #plotter.plot()
+        solution = packer.pack_rectangles(best_chromosome)
+        plotter = Plotter3d(solution)
+        plotter.plot()
 
     @timing
     @staticmethod
@@ -248,6 +248,6 @@ class MethodPicker:
         )
         packing_density = packer.get_packing_density(solution.squeeze())
         print(f"Packing density: {packing_density}")
-        # solution = packer.pack_rectangles(solution.squeeze())
-        # plotter = Plotter3d(solution)
-        # plotter.plot()
+        solution = packer.pack_rectangles(solution.squeeze())
+        plotter = Plotter3d(solution)
+        plotter.plot()

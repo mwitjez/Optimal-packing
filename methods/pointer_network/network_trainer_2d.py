@@ -15,7 +15,6 @@ from .dataset_2d import PackingDataset2d
 class NetworkTrainer_2d:
     def __init__(self) -> None:
         self.dataset = PackingDataset2d()
-        #self.train_dataloader, self.test_dataloader = self.train_test_split()
         self.network_config = {
             "embedding_dim": 32,
             "hidden_dim": 128,
@@ -39,31 +38,7 @@ class NetworkTrainer_2d:
             collate_fn=self.custom_collate,
         )
 
-    def train_test_split(self, train_proportion: float = 0.8):
-        train_size = int(train_proportion * len(self.dataset))
-        test_size = len(self.dataset) - train_size
-
-        train_dataset, test_dataset = random_split(
-            self.dataset, [train_size, test_size]
-        )
-
-        batch_size = self.wandb_config["batch_size"]
-        train_loader = DataLoader(
-            train_dataset,
-            batch_size=batch_size,
-            shuffle=True,
-            collate_fn=self.custom_collate,
-        )
-        test_loader = DataLoader(
-            test_dataset,
-            batch_size=batch_size,
-            shuffle=False,
-            collate_fn=self.custom_collate,
-        )
-        return train_loader, test_loader
-
     def custom_collate(self, batch):
-        # Group samples by their sequence length
         seq_lengths = [len(item[0]) for item in batch]
         unique_lengths = list(set(seq_lengths))
         batches = {length: [[], [], []] for length in unique_lengths}
