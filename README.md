@@ -1,4 +1,4 @@
-# Optimal Packing App
+# Optimal Packing App 📦
 
 The Optimal Packing App is a powerful tool designed to solve complex packing problems. Whether you're dealing with 2D or 3D spaces, designed algorithms ensure efficient packing solutions.
 
@@ -14,18 +14,33 @@ The Optimal Packing App is a powerful tool designed to solve complex packing pro
 - **GA (using Evotorch) + DBLF**: Uses GA from Evotorch library and combines it with Deepest Bottom-Left Fill.
 - **Pointer Network + DBLF**: Uses a Pointer Network approach combined with the Deepest Bottom-Left Fill algorithm.
 
+Additionally, a mobile app was developed for this project that uses AR to enhance 3D problem visualization:
+
+<img src="img/mobile_app.PNG" width="200"/>
+
+## Results
+
+The app outputs a 2D or 3D plot for the given problem.
+
+<img src="img/GA_3D_viz_27.png" width="300"/>
+<img src="img/neuroevolution_2D-16.png" width="300"/>
+
+## App architecture
+
+<img src="img/architektura.png"/>
+
 ## Installation
 
 To get started with the Optimal Packing App:
 
 1. Clone the repository:
    ```bash
-   git clone [repository_link]
+   git clone https://github.com/mwitjez/Optimal-packing.git
     ```
 
 2. Navigate to the project directory and install the required packages:
    ```bash
-    cd [directory_name]
+    cd Optimal-packing
     pip install -r requirements.txt
     ```
 ## API Reference
